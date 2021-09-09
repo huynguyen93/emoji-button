@@ -191,7 +191,6 @@ export class Search {
           this.renderer,
           true,
           this.events,
-          this.options,
           false
         );
 

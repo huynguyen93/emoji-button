@@ -55,7 +55,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     emojiData[EmojiCategory.CUSTOM] = options.custom.map(custom => ({ ...custom, custom: true }));
   }
 
-  const emojiCounts = categories.map(category => emojiData[category].length);
+  let emojiCounts = categories.map(category => emojiData[category].length);
 
   const container = renderEmojiArea(categories, filteredEmojis, renderer, events, options, i18n);
   const headers = findAllByClass(container, classes.categoryName);
@@ -64,19 +64,23 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
   function reset() {
     headerOffsets = getHeaderOffsets(headers);
 
+    emojiCounts = categories.map(category => emojiData[category].length);
+
     const initialCategory = options.initialCategory || categories[0];
     selectCategory({ category: initialCategory });
-    currentCategoryIndex = categories.indexOf(initialCategory);
+    // currentCategoryIndex = categories.indexOf(initialCategory);
+    
     events.emit(SET_ACTIVE_CATEGORY, currentCategoryIndex, false);
   }
 
   function updateRecents() {
     const recents = getRecents(options);
+    emojiData[EmojiCategory.RECENTS] = recents;
 
     const recentsContainer = findByClass(emojiContainer, classes.emojiContainer);
     if (recentsContainer?.parentNode) {
       recentsContainer.parentNode.replaceChild(
-        renderEmojiContainer(recents, renderer, true, events, options, false),
+        renderEmojiContainer(recents, renderer, true, events, false),
         recentsContainer
       )
     }
@@ -251,7 +255,7 @@ function renderEmojiArea(categories, emojiData, renderer, events, options, i18n)
   const showCategoryButtons = options.uiElements.includes(PickerUIElement.CATEGORY_BUTTONS);
 
   const categoryElements = categories.map(category => {
-      return renderCategory(category, emojiData[category], renderer, events, options, i18n);
+      return renderCategory(category, emojiData[category], renderer, events, i18n);
   });
 
   const emojiArea = renderTemplate(template);
@@ -265,14 +269,14 @@ function renderEmojiArea(categories, emojiData, renderer, events, options, i18n)
   return emojiArea;
 }
 
-function renderCategory(category, filteredEmojis, renderer, events, options, i18n) {
+function renderCategory(category, filteredEmojis, renderer, events, i18n) {
   const container = renderTemplate(categoryTemplate, {
     categoryKey: category,
     icon: categoryIcons[category],
     label: i18n.categories[category]
   });
 
-  container.appendChild(renderEmojiContainer(filteredEmojis, renderer, true, events, options, category !== EmojiCategory.RECENTS));
+  container.appendChild(renderEmojiContainer(filteredEmojis, renderer, true, events, category !== EmojiCategory.RECENTS));
 
   return container;
 }
