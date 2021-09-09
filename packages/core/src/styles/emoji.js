@@ -6,15 +6,13 @@ export const emoji = css`
   align-items: center;
   background: transparent;
   border: none;
-  border-radius: 50%;
+  border-radius: 0.25em;
   cursor: pointer;
-  display: inline-flex;
   font-family: var(--emoji-font);
   font-size: var(--emoji-size);
   height: 1.5em;
   justify-content: center;
   margin: 0;
-  outline: none;
   overflow: hidden;
   padding: 0;
   width: 1.5em;
@@ -26,13 +24,15 @@ export const emoji = css`
     vertical-align: -0.1em;
   }
 
-  &:focus {
-    outline: 1px dotted var(--focus-indicator-color);
-  }
-
-  &:focus,
   &:hover {
     background: var(--hover-color);
+    box-shadow: 0 0 1px 0 var(--hover-shadow-color);
+  }
+
+  &:focus {
+    border-radius: 0;
+    background: var(--focus-indicator-background);
+    outline: 1px solid var(--focus-indicator-color);
   }
 `;
 
@@ -49,6 +49,7 @@ export const emojis = css`
 export const emojiContainer = css`
   display: grid;
   justify-content: space-between;
+  gap: 2px;
   padding: 0.5em;
   grid-template-columns: repeat(var(--emoji-per-row), calc(var(--emoji-size) * var(--emoji-size-multiplier)));
   grid-auto-rows: calc(var(--emoji-size) * var(--emoji-size-multiplier));

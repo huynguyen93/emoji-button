@@ -7,7 +7,8 @@ export default css`
   --secondary-text-color: #999999;
   --text-color: #ffffff;
 
-  --hover-color: #666666;
+  --hover-shadow-color: rgba(255, 255, 255, 50%);
+  --hover-color: hsl(0, 0%, 40%);
 
   --category-name-shadow: rgba(255, 255, 255, 0.5);
   --category-name-background: linear-gradient(
@@ -20,6 +21,7 @@ export default css`
   --category-button-color: #ffffff;
 
   --focus-indicator-color: #999999;
+  --focus-indicator-background: hsl(0, 0%, 50%);
 
   --image-placeholder-color: #ffffff;
   
