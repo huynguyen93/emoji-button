@@ -66,9 +66,12 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
 
     emojiCounts = categories.map(category => emojiData[category].length);
 
-    const initialCategory = options.initialCategory || categories[0];
+    let initialCategory = options.initialCategory || categories[0];
+    if (initialCategory === EmojiCategory.RECENTS && emojiData.recents.length === 0) {
+      initialCategory = categories.indexOf(EmojiCategory.RECENTS) + 1;
+    }
+
     selectCategory({ category: initialCategory });
-    // currentCategoryIndex = categories.indexOf(initialCategory);
     
     events.emit(SET_ACTIVE_CATEGORY, currentCategoryIndex, false);
   }
@@ -191,7 +194,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     key: 'ArrowLeft',
     target: emojiContainer,
     callback: pauseScrollListener(() => {
-      if (focusedIndex === 0 && currentCategoryIndex > 0) {
+      if (focusedIndex === 0 && currentCategoryIndex > 0 && emojiCounts[currentCategoryIndex - 1]) {
         previousCategory(emojiCounts[currentCategoryIndex - 1] - 1);
       } else {
         setFocusedEmoji(Math.max(0, focusedIndex - 1));
@@ -215,9 +218,9 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     key: 'ArrowUp',
     target: emojiContainer,
     callback: pauseScrollListener(() => {
-      // If we're on the first row of a category and there is a previous category, we will move to the
+      // If we're on the first row of a category and there is a (non-empty) previous category, we will move to the
       // previous category.
-      if (focusedIndex < options.emojisPerRow && currentCategoryIndex > 0) {
+      if (focusedIndex < options.emojisPerRow && currentCategoryIndex > 0 && emojiCounts[currentCategoryIndex - 1]) {
         const previousCategoryCount = emojiCounts[currentCategoryIndex - 1];
         const previousLastRowCount = (previousCategoryCount % options.emojisPerRow) || options.emojisPerRow;
 
