@@ -1,6 +1,6 @@
 import { EMOJI, HIDE_PREVIEW, SHOW_PREVIEW } from './events';
 import { render } from './render';
-import renderTemplate from './renderTemplate';
+import { renderTemplate } from './renderTemplate';
 import getPlaceholder from './placeholder';
 
 const template = `

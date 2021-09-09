@@ -2,7 +2,7 @@ import * as icons from './icons';
 
 import * as classes from './styles';
 
-import { EmojiContainer } from './emojiContainer';
+import { renderEmojiContainer } from './emojiContainer';
 import { HIDE_PREVIEW, HIDE_VARIANT_POPUP, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS } from './events';
 import { createElement, empty, findByClass, findAllByClass } from './util';
 
@@ -186,14 +186,14 @@ export class Search {
       this.events.emit(HIDE_PREVIEW);
 
       if (searchResults.length) {
-        this.resultsContainer = new EmojiContainer(
+        this.resultsContainer = renderEmojiContainer(
           searchResults,
           this.renderer,
           true,
           this.events,
           this.options,
           false
-        ).render();
+        );
 
         if (this.resultsContainer) {
           findByClass(this.resultsContainer, classes.emoji).tabIndex = 0;

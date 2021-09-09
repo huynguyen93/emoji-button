@@ -7,6 +7,8 @@ export const HIDE_VARIANT_POPUP = 'hideVariantPopup';
 export const CATEGORY_CLICKED = 'categoryClicked';
 export const PICKER_HIDDEN = 'hidden';
 export const SET_ACTIVE_CATEGORY = 'setActiveCategory';
+export const HIDING_PICKER = 'hidingPicker';
+export const SHOWING_PICKER = 'showingPicker';
 
 // TODO write tests
 export default class Events {

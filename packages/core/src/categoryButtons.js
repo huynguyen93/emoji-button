@@ -3,7 +3,7 @@ import { CATEGORY_CLICKED, SET_ACTIVE_CATEGORY } from './events';
 import { EmojiCategory, PickerUIElement } from './constants';
 
 import * as icons from './icons';
-import renderTemplate from './renderTemplate';
+import { renderTemplate } from './renderTemplate';
 
 export const categoryIcons = {
   [EmojiCategory.RECENTS]: icons.history,
@@ -47,7 +47,7 @@ function setActive(newActiveButton, category, focus) {
 }
 
 export function renderCategoryButtons(options, events, i18n) {
-  const categoryData = options.categories || options.emojiData?.categories;
+  const categoryData = options.categories;
   let categories = options.uiElements.includes(PickerUIElement.RECENTS)
     ? [EmojiCategory.RECENTS, ...categoryData]
     : categoryData;

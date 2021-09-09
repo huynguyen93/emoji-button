@@ -1,6 +1,6 @@
 const template = '<div class="{{classes.imagePlaceholder}}">{{{image}}}</div>';
 
-import renderTemplate from './renderTemplate';
+import { renderTemplate } from './renderTemplate';
 
 import { image } from './icons';
 

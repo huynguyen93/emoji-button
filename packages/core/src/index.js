@@ -8,7 +8,7 @@ import { createFocusTrap } from 'focus-trap';
 import Events from './events';
 import { createPopper } from '@popperjs/core';
 
-import { EMOJI, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS, HIDE_VARIANT_POPUP, PICKER_HIDDEN } from './events';
+import { EMOJI, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS, HIDE_VARIANT_POPUP, PICKER_HIDDEN, SHOWING_PICKER, HIDING_PICKER } from './events';
 import { EmojiPreview } from './preview';
 import { Search } from './search';
 import { createElement, empty, findAllByClass } from './util';
@@ -21,7 +21,7 @@ import lazyLoad from './lazyLoad';
 
 import { i18n } from './i18n';
 
-import { EmojiArea } from './emojiArea';
+import { createEmojiArea, EmojiArea } from './emojiArea';
 
 const MOBILE_BREAKPOINT = 450;
 
@@ -187,8 +187,6 @@ export class EmojiButton {
     if (emoji.variations && showVariants && this.options.uiElements.includes(PickerUIElement.VARIANTS)) {
       this.showVariantPopup(emoji);
     } else {
-      setTimeout(() => this.emojiArea.updateRecents());
-
       if (emoji.custom) {
         this.publicEvents.emit(EMOJI, emitCustom(emoji));
       } else {
@@ -259,11 +257,21 @@ export class EmojiButton {
     });
   }
 
+  filterEmojis() {
+    this.filteredEmojis = {};
+    Object.keys(this.options.emojiData).forEach(category => {
+      this.filteredEmojis[category] = this.options.emojiData[category]
+        .filter(e => !e.version || parseFloat(e.version) <= parseFloat(this.options.emojiVersion));
+    });
+  }
+
   /**
    * Builds the emoji picker.
    */
   buildPicker(renderer) {
     this.renderer = renderer;
+
+    this.filterEmojis();
 
     this.pickerEl = createElement('div', 'emoji-picker');
     this.pickerEl.classList.add(classes.picker);
@@ -279,8 +287,8 @@ export class EmojiButton {
 
     this.pickerEl.appendChild(this.pickerContent);
 
-    this.emojiArea = new EmojiArea(this.events, this.renderer, this.i18n, this.options);
-    this.pickerContent.appendChild(this.emojiArea.render());
+    this.emojiArea = createEmojiArea(this.events, this.renderer, this.i18n, this.options, this.filteredEmojis);
+    this.pickerContent.appendChild(this.emojiArea.container);
 
     listenForEmojis(this.events, this.options);
 
@@ -339,10 +347,10 @@ export class EmojiButton {
    */
   observeForLazyLoad() {
     this.observer = new IntersectionObserver(this.handleIntersectionChange.bind(this), {
-      root: this.emojiArea.emojis
+      root: this.emojiArea.emojiContainer
     });
 
-    findAllByClass(this.emojiArea.emojis, classes.emoji).forEach(element => {
+    findAllByClass(this.emojiArea.emojiContainer, classes.emoji).forEach(element => {
       if (this.shouldLazyLoad(element)) {
         this.observer.observe(element);
       }
@@ -427,7 +435,7 @@ export class EmojiButton {
 
     // In some browsers, the delayed hide was triggering the scroll event handler
     // and stealing the focus. Remove the scroll listener before doing the delayed hide.
-    this.emojiArea.emojis.removeEventListener('scroll', this.emojiArea.highlightCategory);
+    this.emojiArea.emojiContainer.removeEventListener('scroll', this.emojiArea.highlightCategory);
 
     this.pickerEl.classList.add('hiding');
 
@@ -470,11 +478,14 @@ export class EmojiButton {
    */
   showPicker(referenceEl) {
     if (this.hideInProgress) {
+      // TODO use animationEnd event instead of static setTimeout
       setTimeout(() => this.showPicker(referenceEl), 100);
       return;
     }
 
-    this.emojiArea.updateRecents()
+    if (this.options.uiElements.includes(PickerUIElement.RECENTS)) {
+      this.emojiArea.updateRecents();
+    }
 
     this.pickerVisible = true;
     this.wrapper.style.display = 'block';
@@ -489,6 +500,7 @@ export class EmojiButton {
     });
 
     this.emojiArea.reset();
+    this.events.emit(SHOWING_PICKER);
   }
 
   /**

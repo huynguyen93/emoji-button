@@ -1,7 +1,7 @@
 import * as classes from './styles';
 
 import { createElement } from './util';
-import renderTemplate from './renderTemplate';
+import { renderTemplate } from './renderTemplate';
 import getPlaceholder from './placeholder';
 
 const template = '<img class="{{classes.customEmoji}}" src="{{emoji.emoji}}">';

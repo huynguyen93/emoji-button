@@ -6,7 +6,7 @@ export const categoryName = css`
   display: flex;
   font-size: 1.2em;
   font-weight: bold;
-  margin: 0.5em 0;
+  padding: 0.5em 0;
   text-align: left;
 `;
 

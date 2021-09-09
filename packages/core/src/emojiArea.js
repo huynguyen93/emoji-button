@@ -2,270 +2,277 @@ import { findByClass } from './util';
 
 import * as classes from './styles';
 
-import { renderCategoryButtons, CategoryButtons, categoryIcons } from './categoryButtons';
-import { EmojiContainer } from './emojiContainer';
+import { renderCategoryButtons, categoryIcons } from './categoryButtons';
+import { renderEmojiContainer } from './emojiContainer';
 
-import { CATEGORY_CLICKED, SET_ACTIVE_CATEGORY } from './events';
+import { CATEGORY_CLICKED, SET_ACTIVE_CATEGORY, SHOWING_PICKER, HIDING_PICKER } from './events';
 
-import { createElement, bindMethods, findAllByClass } from './util';
+import { bindKey } from './bindKey';
+import { findAllByClass } from './util';
 import { getRecents } from './recent';
+import { renderTemplate } from './renderTemplate';
 import { PickerUIElement, EmojiCategory } from './constants';
 
-export class EmojiArea {
-  constructor(events, renderer, i18n, options) {
-    this.events = events;
-    this.i18n = i18n;
-    this.options = options;
+const template = `
+  <div>
+    <div class="{{classes.emojis}}"></div>
+  </div>
+`;
 
-    this.renderer = renderer;
+const categoryTemplate = `
+  <div data-category="{{categoryKey}}">
+    <div class="{{classes.categoryName}}">
+      <div>{{{icon}}}</div>
+      <div class="{{classes.categoryNameLabel}}">{{label}}</div>
+    </div>
+  </div>
+`;
 
-    this.headers = [];
-    this.focusedIndex = 0;
-    this.currentCategory = 0;
+function getHeaderOffsets(headers) {
+  return Array.prototype.map.call(headers, header => header.offsetTop);
+}
 
-    this.emojisPerRow = options.emojisPerRow;
-    this.categories = this.options.categories;
+// TODO custom not showing?
 
-    this.showCategoryButtons = options.uiElements.includes(PickerUIElement.CATEGORY_BUTTONS);
+export function createEmojiArea(events, renderer, i18n, options, filteredEmojis) {
+  let focusedEmoji = null;
+  let focusedIndex = 0;
+  let currentCategoryIndex = 0;
+  let currentCategoryEl = null;
+  let headerOffsets = [];
 
-    bindMethods(this, ['highlightCategory']);
+  const categories = [...options.categories];
+  const emojiData = { ...filteredEmojis };
 
-    if (options.uiElements.includes(PickerUIElement.RECENTS)) {
-      this.categories = [EmojiCategory.RECENTS, ...this.categories];
+  // TODO add this to the categories earlier so we don't duplicate this logic in categoryButtons
+  if (options.uiElements.includes(PickerUIElement.RECENTS)) {
+    categories.unshift(EmojiCategory.RECENTS);
+    emojiData[EmojiCategory.RECENTS] = getRecents(options);
+  }
+
+  if (options.custom) {
+    categories.push(EmojiCategory.CUSTOM);
+    emojiData[EmojiCategory.CUSTOM] = options.custom.map(custom => ({ ...custom, custom: true }));
+  }
+
+  const emojiCounts = categories.map(category => emojiData[category].length);
+
+  const container = renderEmojiArea(categories, filteredEmojis, renderer, events, options, i18n);
+  const headers = findAllByClass(container, classes.categoryName);
+  const emojiContainer = findByClass(container, classes.emojis);
+
+  function reset() {
+    headerOffsets = getHeaderOffsets(headers);
+
+    const initialCategory = options.initialCategory || categories[0];
+    selectCategory({ category: initialCategory });
+    currentCategoryIndex = categories.indexOf(initialCategory);
+    events.emit(SET_ACTIVE_CATEGORY, currentCategoryIndex, false);
+  }
+
+  function updateRecents() {
+    const recents = getRecents(options);
+
+    const recentsContainer = findByClass(emojiContainer, classes.emojiContainer);
+    if (recentsContainer?.parentNode) {
+      recentsContainer.parentNode.replaceChild(
+        renderEmojiContainer(recents, renderer, true, events, options, false),
+        recentsContainer
+      )
+    }
+  }
+
+  function setFocusedEmoji(index, focus = true) {
+    if (focusedEmoji) {
+      focusedEmoji.tabIndex = -1;
     }
 
-    if (options.custom) {
-      this.categories = [...this.categories, EmojiCategory.CUSTOM];
-    }
-  }
+    focusedIndex = index;
+    focusedEmoji = currentCategoryEl.children[index];
 
-  updateRecents() {
-    if (this.options.uiElements.includes(PickerUIElement.RECENTS)) {
-      this.recents = getRecents(this.options);
-      const recentsContainer = findByClass(this.emojis, classes.emojiContainer);
-      if (recentsContainer?.parentNode) {
-        recentsContainer.parentNode.replaceChild(
-          new EmojiContainer(this.recents, this.renderer, true, this.events, this.options, false).render(),
-          recentsContainer
-        );
-      }
-    }
-  }
-
-  render() {
-    this.container = createElement('div');
-
-    if (this.showCategoryButtons) {
-      this.container.appendChild(renderCategoryButtons(this.options, this.events, this.i18n));
-    }
-
-    this.emojis = createElement('div', classes.emojis);
-
-    if (this.options.uiElements.includes(PickerUIElement.RECENTS)) {
-      this.recents = getRecents(this.options);
-    }
-
-    if (this.options.custom) {
-      this.custom = this.options.custom.map(custom => ({
-        ...custom,
-        custom: true
-      }));
-    }
-
-    this.categories.forEach(category => {
-      if (category === EmojiCategory.RECENTS) {
-        this.addCategory(category, this.recents);
-      } else if (category === EmojiCategory.CUSTOM) {
-        this.addCategory(category, this.custom);
-      } else {
-        this.addCategory(category, this.options.emojiData[category]);
-      }
-    });
-
-    this.emojis.addEventListener('scroll', this.highlightCategory);
-
-    this.emojis.addEventListener('keydown', this.handleKeyDown);
-
-    this.events.on(CATEGORY_CLICKED, this.selectCategory, this);
-
-    this.container.appendChild(this.emojis);
-
-    const firstEmoji = findAllByClass(this.container, classes.emoji)[0];
-    firstEmoji.tabIndex = 0;
-
-    return this.container;
-  }
-
-  reset() {
-    this.headerOffsets = Array.prototype.map.call(this.headers, header => header.offsetTop);
-
-    const initialCategory = this.options.initialCategory || this.categories[0];
-
-    this.selectCategory(initialCategory, false);
-    this.currentCategory = this.categories.indexOf(initialCategory);
-    this.events.emit(SET_ACTIVE_CATEGORY, this.currentCategory, false);
-  }
-
-  get currentCategoryEl() {
-    return findAllByClass(this.emojis, classes.emojiContainer)[this.currentCategory];
-  }
-
-  get focusedEmoji() {
-    return findAllByClass(this.currentCategoryEl, classes.emoji)[this.focusedIndex];
-  }
-
-  get currentEmojiCount() {
-    return findAllByClass(this.currentCategoryEl, classes.emoji).length;
-  }
-
-  getEmojiCount(category) {
-    const container = findAllByClass(this.emojis, classes.emojiContainer)[category];
-    return findAllByClass(container, classes.emoji).length;
-  }
-
-  handleKeyDown = event => {
-    this.emojis.removeEventListener('scroll', this.highlightCategory);
-    switch (event.key) {
-      case 'ArrowRight':
-        this.focusedEmoji.tabIndex = -1;
-
-        if (this.focusedIndex === this.currentEmojiCount - 1 && this.currentCategory < this.categories.length - 1) {
-          this.events.emit(SET_ACTIVE_CATEGORY, ++this.currentCategory);
-          this.setFocusedEmoji(0);
-        } else if (this.focusedIndex < this.currentEmojiCount - 1) {
-          this.setFocusedEmoji(this.focusedIndex + 1);
-        }
-        break;
-      case 'ArrowLeft':
-        this.focusedEmoji.tabIndex = -1;
-
-        if (this.focusedIndex === 0 && this.currentCategory > 0) {
-          this.events.emit(SET_ACTIVE_CATEGORY, --this.currentCategory);
-          this.setFocusedEmoji(this.currentEmojiCount - 1);
-        } else {
-          this.setFocusedEmoji(Math.max(0, this.focusedIndex - 1));
-        }
-        break;
-      case 'ArrowDown':
-        event.preventDefault();
-        this.focusedEmoji.tabIndex = -1;
-
-        if (
-          this.focusedIndex + this.emojisPerRow >= this.currentEmojiCount &&
-          this.currentCategory < this.categories.length - 1
-        ) {
-          this.currentCategory++;
-          this.events.emit(SET_ACTIVE_CATEGORY, this.currentCategory);
-          this.setFocusedEmoji(Math.min(this.focusedIndex % this.emojisPerRow, this.currentEmojiCount - 1));
-        } else if (this.currentEmojiCount - this.focusedIndex > this.emojisPerRow) {
-          this.setFocusedEmoji(this.focusedIndex + this.emojisPerRow);
-        }
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        this.focusedEmoji.tabIndex = -1;
-
-        if (this.focusedIndex < this.emojisPerRow && this.currentCategory > 0) {
-          const previousCategoryCount = this.getEmojiCount(this.currentCategory - 1);
-          let previousLastRowCount = previousCategoryCount % this.emojisPerRow;
-          if (previousLastRowCount === 0) {
-            previousLastRowCount = this.emojisPerRow;
-          }
-          const currentColumn = this.focusedIndex;
-          const newIndex =
-            currentColumn > previousLastRowCount - 1
-              ? previousCategoryCount - 1
-              : previousCategoryCount - previousLastRowCount + currentColumn;
-
-          this.currentCategory--;
-          this.events.emit(SET_ACTIVE_CATEGORY, this.currentCategory);
-
-          this.setFocusedEmoji(newIndex);
-        } else {
-          this.setFocusedEmoji(
-            this.focusedIndex >= this.emojisPerRow ? this.focusedIndex - this.emojisPerRow : this.focusedIndex
-          );
-        }
-        break;
-    }
-    requestAnimationFrame(() => this.emojis.addEventListener('scroll', this.highlightCategory));
-  };
-
-  setFocusedEmoji(index, focus = true) {
-    this.focusedIndex = index;
-
-    if (this.focusedEmoji) {
-      this.focusedEmoji.tabIndex = 0;
+    if (focusedEmoji) {
+      focusedEmoji.tabIndex = 0;
 
       if (focus) {
-        this.focusedEmoji.focus();
+        focusedEmoji.focus();
       }
     }
   }
 
-  addCategory = (category, emojis) => {
-    const nameEl = createElement('div', classes.categoryName);
+  function highlightCategory() {
+    const currentCategoryContainer = currentCategoryEl.parentNode;
+    const nextCategoryContainer = currentCategoryContainer.nextSibling;
+    
+    if (emojiContainer.scrollTop >= nextCategoryContainer.offsetTop) {
+      selectCategory({
+        category: nextCategoryContainer.dataset.category,
+        scroll: false
+      });
+    } else {
+      const previousCategoryContainer = currentCategoryContainer.previousSibling;
+      if (previousCategoryContainer && emojiContainer.scrollTop < currentCategoryContainer.offsetTop) {
+        selectCategory({
+          category: previousCategoryContainer.dataset.category,
+          scroll: false
+        });
+      }
+    }
 
-    const categoryName = this.i18n.categories[category];
+    // let closestHeaderIndex = Math.max(0, headerOffsets.findIndex(offset => offset > Math.round(emojiContainer.scrollTop)) - 1);
 
-    const icon = createElement('div');
-    icon.innerHTML = categoryIcons[category];
+    // if (closestHeaderIndex !== currentCategoryIndex) {
+    //   selectCategory({
+    //     category: closestHeaderIndex,
+    //     scroll: false
+    //   });
+    // }
+  }
 
-    const label = createElement('div', classes.categoryNameLabel);
-    label.innerHTML = categoryName;
+  function selectCategory({ category, focusIndex = 0, focusTarget, scroll = true }) {
+    if (focusedEmoji) {
+      focusedEmoji.tabIndex = -1;
+    }
 
-    nameEl.appendChild(icon);
-    nameEl.appendChild(label);
+    currentCategoryIndex = typeof category === 'number' ? category : categories.indexOf(category);
+    currentCategoryEl = findByClass(emojiContainer.children[currentCategoryIndex], classes.emojiContainer);
 
-    this.emojis.appendChild(nameEl);
-    this.headers.push(nameEl);
+    setFocusedEmoji(focusIndex, focusTarget === 'emoji');
 
-    this.emojis.appendChild(
-      new EmojiContainer(
-        emojis,
-        this.renderer,
-        true,
-        this.events,
-        this.options,
-        category !== EmojiCategory.RECENTS
-      ).render()
-    );
+    events.emit(SET_ACTIVE_CATEGORY, currentCategoryIndex, focusTarget === 'category');
+
+    if (scroll) {
+      const targetPosition = headerOffsets[currentCategoryIndex];
+      emojiContainer.scrollTop = targetPosition;
+    }
+  }
+
+  function nextCategory(focusIndex) {
+    traverseCategory(1, focusIndex);
+  }
+
+  function previousCategory(focusIndex) {
+    traverseCategory(-1, focusIndex);
+  }
+
+  function traverseCategory(direction, focusIndex) {
+    selectCategory({
+      category: currentCategoryIndex + direction,
+      focusTarget: 'emoji',
+      focusIndex,
+      scroll: false
+    });
+  }
+
+  function pauseScrollListener(fn) {
+    return function() {
+      emojiContainer.removeEventListener('scroll', highlightCategory);
+      fn();
+      setTimeout(() => emojiContainer.addEventListener('scroll', highlightCategory));
+    }
+  }
+
+  bindKey({
+    key: 'ArrowRight',
+    target: emojiContainer,
+    callback: pauseScrollListener(() => {
+      if (focusedIndex === emojiCounts[currentCategoryIndex] - 1 && currentCategoryIndex < categories.length - 1) {
+        nextCategory();
+      } else if (focusedIndex < emojiCounts[currentCategoryIndex] - 1) {
+        setFocusedEmoji(focusedIndex + 1);
+      }
+    })
+  });
+
+  bindKey({
+    key: 'ArrowLeft',
+    target: emojiContainer,
+    callback: pauseScrollListener(() => {
+      if (focusedIndex === 0 && currentCategoryIndex > 0) {
+        previousCategory(emojiCounts[currentCategoryIndex - 1] - 1);
+      } else {
+        setFocusedEmoji(Math.max(0, focusedIndex - 1));
+      }
+    })
+  });
+
+  bindKey({
+    key: 'ArrowDown',
+    target: emojiContainer,
+    callback: pauseScrollListener(() => {
+      if (focusedIndex + options.emojisPerRow >= emojiCounts[currentCategoryIndex] && currentCategoryIndex < categories.length - 1) {
+        nextCategory(Math.min(focusedIndex % options.emojisPerRow, emojiCounts[currentCategoryIndex] - 1));
+      } else if (emojiCounts[currentCategoryIndex] - focusedIndex > options.emojisPerRow) {
+        setFocusedEmoji(focusedIndex + options.emojisPerRow);
+      }
+    })
+  });
+
+  bindKey({
+    key: 'ArrowUp',
+    target: emojiContainer,
+    callback: pauseScrollListener(() => {
+      // If we're on the first row of a category and there is a previous category, we will move to the
+      // previous category.
+      if (focusedIndex < options.emojisPerRow && currentCategoryIndex > 0) {
+        const previousCategoryCount = emojiCounts[currentCategoryIndex - 1];
+        const previousLastRowCount = (previousCategoryCount % options.emojisPerRow) || options.emojisPerRow;
+
+        let newIndex = previousCategoryCount - 1;
+
+        // If the current column exceeds the count of the previous category's last row, we will move to the
+        // last item in the previous category's last row.
+        if (focusedIndex <= (previousLastRowCount - 1)) {
+          const previousRowCount = Math.ceil(previousCategoryCount / options.emojisPerRow);
+          newIndex = (options.emojisPerRow * (previousRowCount - 1)) + focusedIndex;
+        }
+
+        previousCategory(newIndex);
+      } else {
+        setFocusedEmoji(focusedIndex >= options.emojisPerRow ? focusedIndex - options.emojisPerRow : focusedIndex);
+      }
+    })
+  });
+
+  emojiContainer.addEventListener('scroll', highlightCategory);
+
+  events.on(CATEGORY_CLICKED, category => selectCategory({ category }));
+
+  updateRecents();
+
+  return {
+    container,
+    emojiContainer,
+    updateRecents,
+    reset
   };
+}
 
-  selectCategory(category, focus = true) {
-    this.emojis.removeEventListener('scroll', this.highlightCategory);
-    if (this.focusedEmoji) {
-      this.focusedEmoji.tabIndex = -1;
-    }
+function renderEmojiArea(categories, emojiData, renderer, events, options, i18n) {
+  const showCategoryButtons = options.uiElements.includes(PickerUIElement.CATEGORY_BUTTONS);
 
-    const categoryIndex = this.categories.indexOf(category);
-    this.currentCategory = categoryIndex;
-    this.setFocusedEmoji(0, false);
-    this.events.emit(SET_ACTIVE_CATEGORY, this.currentCategory, focus);
+  const categoryElements = categories.map(category => {
+      return renderCategory(category, emojiData[category], renderer, events, options, i18n);
+  });
 
-    const targetPosition = this.headerOffsets[categoryIndex];
-    this.emojis.scrollTop = targetPosition;
-    requestAnimationFrame(() => this.emojis.addEventListener('scroll', this.highlightCategory));
+  const emojiArea = renderTemplate(template);
+
+  if (showCategoryButtons) {
+    emojiArea.prepend(renderCategoryButtons(options, events, i18n));
   }
 
-  highlightCategory() {
-    let closestHeaderIndex = this.headerOffsets.findIndex(offset => offset >= Math.round(this.emojis.scrollTop));
+  findByClass(emojiArea, classes.emojis).append(...categoryElements);
 
-    if (this.emojis.scrollTop + this.emojis.offsetHeight === this.emojis.scrollHeight) {
-      closestHeaderIndex = -1;
-    }
+  return emojiArea;
+}
 
-    if (closestHeaderIndex === 0) {
-      closestHeaderIndex = 1;
-    } else if (closestHeaderIndex < 0) {
-      closestHeaderIndex = this.headerOffsets.length;
-    }
+function renderCategory(category, filteredEmojis, renderer, events, options, i18n) {
+  const container = renderTemplate(categoryTemplate, {
+    categoryKey: category,
+    icon: categoryIcons[category],
+    label: i18n.categories[category]
+  });
 
-    if (this.headerOffsets[closestHeaderIndex] === this.emojis.scrollTop) {
-      closestHeaderIndex++;
-    }
+  container.appendChild(renderEmojiContainer(filteredEmojis, renderer, true, events, options, category !== EmojiCategory.RECENTS));
 
-    this.currentCategory = closestHeaderIndex - 1;
-    this.events.emit(SET_ACTIVE_CATEGORY, this.currentCategory, false);
-  }
+  return container;
 }

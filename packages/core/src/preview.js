@@ -2,7 +2,7 @@ import { SHOW_PREVIEW, HIDE_PREVIEW } from './events';
 
 import { render } from './render';
 
-import renderTemplate from './renderTemplate';
+import { renderTemplate } from './renderTemplate';
 
 const template = `
   <div class="{{classes.preview}}">
