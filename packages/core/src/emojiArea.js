@@ -124,15 +124,6 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
         });
       }
     }
-
-    // let closestHeaderIndex = Math.max(0, headerOffsets.findIndex(offset => offset > Math.round(emojiContainer.scrollTop)) - 1);
-
-    // if (closestHeaderIndex !== currentCategoryIndex) {
-    //   selectCategory({
-    //     category: closestHeaderIndex,
-    //     scroll: false
-    //   });
-    // }
   }
 
   function selectCategory({ category, focusIndex = 0, focusTarget, scroll = true }) {
