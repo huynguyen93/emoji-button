@@ -6,6 +6,7 @@ export const emoji = css`
   align-items: center;
   background: transparent;
   border: none;
+  border-radius: 50%;
   cursor: pointer;
   display: inline-flex;
   font-family: var(--emoji-font);
@@ -36,7 +37,7 @@ export const emoji = css`
 `;
 
 export const emojis = css`
-  height: calc(var(--content-height) - var(--category-button-height));
+  height: calc(var(--content-height) - var(--category-button-height) - 0.5em);
   overflow-y: auto;
   position: relative;
 
@@ -48,6 +49,7 @@ export const emojis = css`
 export const emojiContainer = css`
   display: grid;
   justify-content: space-between;
+  padding: 0.5em;
   grid-template-columns: repeat(var(--emoji-per-row), calc(var(--emoji-size) * var(--emoji-size-multiplier)));
   grid-auto-rows: calc(var(--emoji-size) * var(--emoji-size-multiplier));
 `;

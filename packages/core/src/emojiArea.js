@@ -21,15 +21,14 @@ const template = `
 
 const categoryTemplate = `
   <div data-category="{{categoryKey}}">
-    <div class="{{classes.categoryName}}">
-      <div>{{{icon}}}</div>
-      <div class="{{classes.categoryNameLabel}}">{{label}}</div>
-    </div>
+    <h3 class="{{classes.categoryName}}">{{label}}</h3>
   </div>
 `;
 
 function getHeaderOffsets(headers) {
-  return Array.prototype.map.call(headers, header => header.offsetTop);
+  return Array.prototype.map.call(headers, (header, index) =>
+    index && header.offsetTop
+  );
 }
 
 // TODO custom not showing?
@@ -266,7 +265,6 @@ function renderEmojiArea(categories, emojiData, renderer, events, options, i18n)
 function renderCategory(category, filteredEmojis, renderer, events, i18n) {
   const container = renderTemplate(categoryTemplate, {
     categoryKey: category,
-    icon: categoryIcons[category],
     label: i18n.categories[category]
   });
 

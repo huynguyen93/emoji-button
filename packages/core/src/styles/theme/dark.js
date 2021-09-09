@@ -9,6 +9,13 @@ export default css`
 
   --hover-color: #666666;
 
+  --category-name-shadow: rgba(255, 255, 255, 0.5);
+  --category-name-background: linear-gradient(
+      hsl(214, 40%, 30%),
+      hsl(214, 30%, 28%)
+  );
+  --category-name-text-color: hsl(214, 30%, 80%);
+
   --category-button-active-color: var(--blue-color);
   --category-button-color: #ffffff;
 

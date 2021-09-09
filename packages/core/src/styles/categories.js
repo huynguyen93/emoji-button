@@ -1,17 +1,13 @@
 import { css } from '@emotion/css';
 
 export const categoryName = css`
-  align-items: center;
-  color: var(--secondary-text-color);
-  display: flex;
-  font-size: 1.2em;
-  font-weight: bold;
-  padding: 0.5em 0;
-  text-align: left;
-`;
-
-export const categoryNameLabel = css`
-  margin-left: 0.25em;
+  margin: 1px 0;
+  font-size: 0.85em;
+  padding: 0.5em;
+  background-image: var(--category-name-background);
+  color: var(--category-name-text-color);
+  text-transform: uppercase;
+  box-shadow: 0 0 2px 0 var(--category-name-shadow);
 `;
 
 export const categoryButtons = css`

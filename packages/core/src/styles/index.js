@@ -45,7 +45,6 @@ export const overlay = css`
 
 export const content = css`
   height: var(--content-height);
-  padding: 0.5em;
   position: relative;
 `;
 
