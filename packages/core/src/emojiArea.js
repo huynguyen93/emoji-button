@@ -21,7 +21,10 @@ const template = `
 
 const categoryTemplate = `
   <div data-category="{{categoryKey}}">
-    <h3 class="{{classes.categoryName}}">{{label}}</h3>
+    <h3 class="{{classes.categoryName}}">
+      {{{icon}}}
+      {{label}}
+    </h3>
   </div>
 `;
 
@@ -265,7 +268,8 @@ function renderEmojiArea(categories, emojiData, renderer, events, options, i18n)
 function renderCategory(category, filteredEmojis, renderer, events, i18n) {
   const container = renderTemplate(categoryTemplate, {
     categoryKey: category,
-    label: i18n.categories[category]
+    label: i18n.categories[category],
+    icon: categoryIcons[category]
   });
 
   container.appendChild(renderEmojiContainer(filteredEmojis, renderer, true, events, category !== EmojiCategory.RECENTS));

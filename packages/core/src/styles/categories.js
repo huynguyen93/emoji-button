@@ -10,6 +10,12 @@ export const categoryName = css`
   box-shadow: 0 0 2px 0 var(--category-name-shadow);
   position: sticky;
   top: 0;
+
+  svg {
+    font-size: 1.25em;
+    opacity: 0.5;
+    margin-right: 0.25em;
+  }
 `;
 
 export const categoryButtons = css`
