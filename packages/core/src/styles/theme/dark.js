@@ -17,8 +17,10 @@ export default css`
   );
   --category-name-text-color: hsl(214, 30%, 80%);
 
-  --category-button-active-color: var(--blue-color);
-  --category-button-color: #ffffff;
+  --category-button-active-background: var(--blue-color);
+  --category-button-active-color: #ffffff;
+  --category-button-highlight-color: #ffffff;
+  --category-button-color: #AAAAAA;
 
   --focus-indicator-color: #999999;
   --focus-indicator-background: hsl(0, 0%, 50%);

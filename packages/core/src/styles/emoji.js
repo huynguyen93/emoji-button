@@ -49,7 +49,7 @@ export const emojis = css`
 export const emojiContainer = css`
   display: grid;
   justify-content: space-between;
-  gap: 2px;
+  gap: 1px;
   padding: 0.5em;
   grid-template-columns: repeat(var(--emoji-per-row), calc(var(--emoji-size) * var(--emoji-size-multiplier)));
   grid-auto-rows: calc(var(--emoji-size) * var(--emoji-size-multiplier));

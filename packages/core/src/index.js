@@ -55,9 +55,9 @@ const DEFAULT_OPTIONS = {
     EmojiCategory.SYMBOLS,
     EmojiCategory.FLAGS
   ],
-  emojisPerRow: 8,
+  emojisPerRow: 9,
   rows: 6,
-  emojiSize: '1.8em'
+  emojiSize: '1.5em'
 };
 
 // REFACTOR TODO:

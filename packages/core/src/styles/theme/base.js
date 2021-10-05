@@ -11,7 +11,7 @@ export const baseTheme = css`
 
   --emoji-per-row: 8;
   --emoji-preview-size: 2em;
-  --emoji-size: 1.8em;
+  --emoji-size: 1.5em;
   --emoji-size-multiplier: 1.5;
 
   --category-button-height: 2em;

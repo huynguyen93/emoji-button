@@ -22,7 +22,7 @@ export const categoryIcons = {
 const template = `
   <div class="{{classes.categoryButtons}}">
     {{#categories}}
-      <button class="{{classes.categoryButton}}" tabindex="-1" title="{{name}}" type="button" data-category="{{.}}">
+      <button class="fa-fw {{classes.categoryButton}}" tabindex="-1" title="{{name}}" type="button" data-category="{{.}}">
         {{{icon}}}
       </button>
     {{/categories}}
