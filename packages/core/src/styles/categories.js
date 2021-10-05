@@ -8,6 +8,8 @@ export const categoryName = css`
   color: var(--category-name-text-color);
   text-transform: uppercase;
   box-shadow: 0 0 2px 0 var(--category-name-shadow);
+  position: sticky;
+  top: 0;
 `;
 
 export const categoryButtons = css`
