@@ -33,6 +33,13 @@ export const search = css`
   }
 `;
 
+export const clearButton = css`
+  border: 0;
+  color: var(--search-icon-color);
+  background: transparent;
+  cursor: pointer;
+`;
+
 export const searchIcon = css`
   color: var(--search-icon-color);
   height: 1em;

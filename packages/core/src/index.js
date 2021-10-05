@@ -10,7 +10,7 @@ import { createPopper } from '@popperjs/core';
 
 import { EMOJI, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS, HIDE_VARIANT_POPUP, PICKER_HIDDEN, SHOWING_PICKER, HIDING_PICKER } from './events';
 import { EmojiPreview } from './preview';
-import { Search } from './search';
+import { Search, createSearch } from './search';
 import { createElement, empty, findAllByClass } from './util';
 import { VariantPopup } from './variantPopup';
 import { listenForEmojis } from './recent';
@@ -204,16 +204,13 @@ export class EmojiButton {
    */
   buildSearch() {
     if (this.options.uiElements.includes(PickerUIElement.SEARCH)) {
-      this.search = new Search(
-        this.events,
+      this.search = createSearch(
+        this.i18n, 
         this.renderer,
-        this.i18n,
-        this.options,
-        this.options.emojiData,
-        this.options.categories
+        this.events,
+        this.filteredEmojis
       );
-
-      this.pickerEl.appendChild(this.search.render());
+      this.pickerEl.appendChild(this.search.container);
     }
   }
 
@@ -451,9 +448,7 @@ export class EmojiButton {
           this.pickerContent.appendChild(this.emojiArea.container);
         }
 
-        if (this.search) {
-          this.search.clear();
-        }
+        this.search?.clearSearch();
 
         this.events.emit(HIDE_VARIANT_POPUP);
 
@@ -622,7 +617,7 @@ export class EmojiButton {
       this.pickerEl.classList.add('keyboard');
     } else if (event.key.match(/^[\w]$/) && this.search) {
       // If a search term is entered, move the focus to the search field.
-      this.search.focus();
+      this.search.focusSearch();
     }
   }
 

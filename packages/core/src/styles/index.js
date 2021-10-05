@@ -46,6 +46,7 @@ export const overlay = css`
 export const content = css`
   height: var(--content-height);
   position: relative;
+  overflow: hidden;
 `;
 
 export const pluginContainer = css`
