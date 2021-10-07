@@ -28,7 +28,7 @@ const clearButtonTemplate = `
   </button>
 `;
 
-export function createSearch(i18n, renderer, events, emojis) {
+export function createSearch(i18n, renderer, events, emojis, options) {
   const searchData = Object.keys(emojis)
     .flatMap(category => emojis[category]);
 
@@ -63,7 +63,8 @@ export function createSearch(i18n, renderer, events, emojis) {
         renderer,
         true,
         events,
-        false
+        false,
+        options
       );
 
       events.emit(SHOW_SEARCH_RESULTS, resultsContainer);
@@ -75,7 +76,7 @@ export function createSearch(i18n, renderer, events, emojis) {
   const searchInput = container.querySelector('input');
   searchInput.addEventListener('input', () => {
     if (searchInput.value) {
-      iconContainer.replaceCwqqhild(clearButton, iconContainer.firstChild);
+      iconContainer.replaceChild(clearButton, iconContainer.firstChild);
     } else {
       events.emit(HIDE_SEARCH_RESULTS);
       iconContainer.replaceChild(searchIcon, iconContainer.firstChild);
@@ -304,7 +305,8 @@ export class Search {
           this.renderer,
           true,
           this.events,
-          false
+          false,
+          this.options
         );
 
         if (this.resultsContainer) {

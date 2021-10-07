@@ -208,7 +208,8 @@ export class EmojiButton {
         this.i18n, 
         this.renderer,
         this.events,
-        this.filteredEmojis
+        this.filteredEmojis,
+        this.options
       );
       this.pickerEl.appendChild(this.search.container);
     }

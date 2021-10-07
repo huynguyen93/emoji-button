@@ -85,7 +85,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     const recentsContainer = findByClass(emojiContainer, classes.emojiContainer);
     if (recentsContainer?.parentNode) {
       recentsContainer.parentNode.replaceChild(
-        renderEmojiContainer(recents, renderer, true, events, false),
+        renderEmojiContainer(recents, renderer, true, events, false, options),
         recentsContainer
       )
     }
@@ -171,6 +171,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     }
   }
 
+  /*
   bindKey({
     key: 'ArrowRight',
     target: emojiContainer,
@@ -232,6 +233,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
       }
     })
   });
+  */
 
   emojiContainer.addEventListener('scroll', highlightCategory);
 
@@ -265,14 +267,14 @@ function renderEmojiArea(categories, emojiData, renderer, events, options, i18n)
   return emojiArea;
 }
 
-function renderCategory(category, filteredEmojis, renderer, events, i18n) {
+function renderCategory(category, filteredEmojis, renderer, events, i18n, options) {
   const container = renderTemplate(categoryTemplate, {
     categoryKey: category,
     label: i18n.categories[category],
     icon: categoryIcons[category]
   });
 
-  container.appendChild(renderEmojiContainer(filteredEmojis, renderer, true, events, category !== EmojiCategory.RECENTS));
+  container.appendChild(renderEmojiContainer(filteredEmojis, renderer, true, events, category !== EmojiCategory.RECENTS), options);
 
   return container;
 }
