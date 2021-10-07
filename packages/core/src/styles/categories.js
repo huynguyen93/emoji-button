@@ -23,8 +23,7 @@ export const categoryButtons = css`
   flex-direction: row;
   height: var(--category-button-height);
   justify-content: space-around;
-  margin-bottom: 0.5em;
-  padding: 0 0.5em;
+  margin: 0.5em;
 `;
 
 export const categoryButton = css`

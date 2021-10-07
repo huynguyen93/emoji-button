@@ -75,7 +75,7 @@ export function createSearch(i18n, renderer, events, emojis) {
   const searchInput = container.querySelector('input');
   searchInput.addEventListener('input', () => {
     if (searchInput.value) {
-      iconContainer.replaceChild(clearButton, iconContainer.firstChild);
+      iconContainer.replaceCwqqhild(clearButton, iconContainer.firstChild);
     } else {
       events.emit(HIDE_SEARCH_RESULTS);
       iconContainer.replaceChild(searchIcon, iconContainer.firstChild);

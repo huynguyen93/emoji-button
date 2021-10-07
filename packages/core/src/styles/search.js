@@ -9,6 +9,7 @@ export const searchContainer = css`
   display: flex;
   height: var(--search-height);
   margin: 0.5em;
+  margin-bottom: 0.25em;
   position: relative;
 `;
 
