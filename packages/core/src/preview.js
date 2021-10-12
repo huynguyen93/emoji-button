@@ -21,14 +21,9 @@ export class EmojiPreview {
   render() {
     const preview = renderTemplate(template);
     [this.emoji, this.name] = preview.children;
-
-    this.events.bindEvents(
-      {
-        [SHOW_PREVIEW]: this.showPreview,
-        [HIDE_PREVIEW]: this.hidePreview
-      },
-      this
-    );
+  
+    this.events.on(SHOW_PREVIEW, emoji => this.showPreview(emoji));
+    this.events.on(HIDE_PREVIEW, () => this.hidePreview());
 
     return preview;
   }

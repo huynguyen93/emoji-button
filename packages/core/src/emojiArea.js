@@ -5,7 +5,15 @@ import * as classes from './styles';
 import { renderCategoryButtons, categoryIcons } from './categoryButtons';
 import { renderEmojiContainer } from './emojiContainer';
 
-import { CATEGORY_CLICKED, SET_ACTIVE_CATEGORY, SHOWING_PICKER, HIDING_PICKER } from './events';
+import { 
+  CATEGORY_CLICKED, 
+  SET_ACTIVE_CATEGORY, 
+  SHOWING_PICKER, 
+  HIDING_PICKER,
+  ACTIVATE_CATEGORY,
+  NEXT_CATEGORY,
+  PREVIOUS_CATEGORY
+} from './events';
 
 import { bindKey } from './bindKey';
 import { findAllByClass } from './util';
@@ -38,7 +46,7 @@ function getHeaderOffsets(headers) {
 
 export function createEmojiArea(events, renderer, i18n, options, filteredEmojis) {
   let focusedEmoji = null;
-  let focusedIndex = 0;
+  // let focusedIndex = 0;
   let currentCategoryIndex = 0;
   let currentCategoryEl = null;
   let headerOffsets = [];
@@ -57,16 +65,37 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     emojiData[EmojiCategory.CUSTOM] = options.custom.map(custom => ({ ...custom, custom: true }));
   }
 
-  let emojiCounts = categories.map(category => emojiData[category].length);
-
-  const container = renderEmojiArea(categories, filteredEmojis, renderer, events, options, i18n);
+  const { el: container, emojiViews } = renderEmojiArea(categories, filteredEmojis, renderer, events, options, i18n);
   const headers = findAllByClass(container, classes.categoryName);
   const emojiContainer = findByClass(container, classes.emojis);
 
+  events.on(PREVIOUS_CATEGORY, (offset, reference) => {
+    if (currentCategoryIndex > 0) {
+      const currentView = emojiViews[categories[currentCategoryIndex]];
+      currentView.deactivateFocus();
+
+      selectCategory({ category: currentCategoryIndex - 1, scroll: false });
+
+      const previousView = emojiViews[categories[currentCategoryIndex]];
+      
+      previousView.activateFocus(offset, reference);
+    }
+  });
+
+  events.on(NEXT_CATEGORY, (offset, reference) => {
+    if (currentCategoryIndex < categories.length - 1) {
+      const currentView = emojiViews[categories[currentCategoryIndex]];
+      currentView.deactivateFocus();
+
+      selectCategory({ category: currentCategoryIndex + 1, scroll: false });
+
+      const nextView = emojiViews[categories[currentCategoryIndex]];
+      nextView.activateFocus(offset, reference);
+    }
+  });
+
   function reset() {
     headerOffsets = getHeaderOffsets(headers);
-
-    emojiCounts = categories.map(category => emojiData[category].length);
 
     let initialCategory = options.initialCategory || categories[0];
     if (initialCategory === EmojiCategory.RECENTS && emojiData.recents.length === 0) {
@@ -84,10 +113,12 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
 
     const recentsContainer = findByClass(emojiContainer, classes.emojiContainer);
     if (recentsContainer?.parentNode) {
+      const newView = renderEmojiContainer(EmojiCategory.RECENTS, recents, renderer, true, events, false, options);
+      emojiViews[EmojiCategory.RECENTS] = newView;
       recentsContainer.parentNode.replaceChild(
-        renderEmojiContainer(recents, renderer, true, events, false, options),
+        newView.el,
         recentsContainer
-      )
+      );
     }
   }
 
@@ -96,7 +127,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
       focusedEmoji.tabIndex = -1;
     }
 
-    focusedIndex = index;
+    // focusedIndex = index;
     focusedEmoji = currentCategoryEl.children[index];
 
     if (focusedEmoji) {
@@ -171,70 +202,6 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     }
   }
 
-  /*
-  bindKey({
-    key: 'ArrowRight',
-    target: emojiContainer,
-    callback: pauseScrollListener(() => {
-      if (focusedIndex === emojiCounts[currentCategoryIndex] - 1 && currentCategoryIndex < categories.length - 1) {
-        nextCategory();
-      } else if (focusedIndex < emojiCounts[currentCategoryIndex] - 1) {
-        setFocusedEmoji(focusedIndex + 1);
-      }
-    })
-  });
-
-  bindKey({
-    key: 'ArrowLeft',
-    target: emojiContainer,
-    callback: pauseScrollListener(() => {
-      if (focusedIndex === 0 && currentCategoryIndex > 0 && emojiCounts[currentCategoryIndex - 1]) {
-        previousCategory(emojiCounts[currentCategoryIndex - 1] - 1);
-      } else {
-        setFocusedEmoji(Math.max(0, focusedIndex - 1));
-      }
-    })
-  });
-
-  bindKey({
-    key: 'ArrowDown',
-    target: emojiContainer,
-    callback: pauseScrollListener(() => {
-      if (focusedIndex + options.emojisPerRow >= emojiCounts[currentCategoryIndex] && currentCategoryIndex < categories.length - 1) {
-        nextCategory(Math.min(focusedIndex % options.emojisPerRow, emojiCounts[currentCategoryIndex] - 1));
-      } else if (emojiCounts[currentCategoryIndex] - focusedIndex > options.emojisPerRow) {
-        setFocusedEmoji(focusedIndex + options.emojisPerRow);
-      }
-    })
-  });
-
-  bindKey({
-    key: 'ArrowUp',
-    target: emojiContainer,
-    callback: pauseScrollListener(() => {
-      // If we're on the first row of a category and there is a (non-empty) previous category, we will move to the
-      // previous category.
-      if (focusedIndex < options.emojisPerRow && currentCategoryIndex > 0 && emojiCounts[currentCategoryIndex - 1]) {
-        const previousCategoryCount = emojiCounts[currentCategoryIndex - 1];
-        const previousLastRowCount = (previousCategoryCount % options.emojisPerRow) || options.emojisPerRow;
-
-        let newIndex = previousCategoryCount - 1;
-
-        // If the current column exceeds the count of the previous category's last row, we will move to the
-        // last item in the previous category's last row.
-        if (focusedIndex <= (previousLastRowCount - 1)) {
-          const previousRowCount = Math.ceil(previousCategoryCount / options.emojisPerRow);
-          newIndex = (options.emojisPerRow * (previousRowCount - 1)) + focusedIndex;
-        }
-
-        previousCategory(newIndex);
-      } else {
-        setFocusedEmoji(focusedIndex >= options.emojisPerRow ? focusedIndex - options.emojisPerRow : focusedIndex);
-      }
-    })
-  });
-  */
-
   emojiContainer.addEventListener('scroll', highlightCategory);
 
   events.on(CATEGORY_CLICKED, category => selectCategory({ category }));
@@ -252,9 +219,15 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
 function renderEmojiArea(categories, emojiData, renderer, events, options, i18n) {
   const showCategoryButtons = options.uiElements.includes(PickerUIElement.CATEGORY_BUTTONS);
 
-  const categoryElements = categories.map(category => {
-      return renderCategory(category, emojiData[category], renderer, events, i18n);
+  const categoryViews = categories.map(category => {
+      return renderCategory(category, emojiData[category], renderer, events, i18n, options);
   });
+  
+  const categoryElements = categoryViews.map(({ el }) => el);
+  const emojiViews = categoryViews.reduce((result, current) => ({
+      ...result,
+      [current.category]: current.emojiContainer
+  }), {});
 
   const emojiArea = renderTemplate(template);
 
@@ -264,7 +237,10 @@ function renderEmojiArea(categories, emojiData, renderer, events, options, i18n)
 
   findByClass(emojiArea, classes.emojis).append(...categoryElements);
 
-  return emojiArea;
+  return {
+    el: emojiArea,
+    emojiViews
+  };
 }
 
 function renderCategory(category, filteredEmojis, renderer, events, i18n, options) {
@@ -274,7 +250,8 @@ function renderCategory(category, filteredEmojis, renderer, events, i18n, option
     icon: categoryIcons[category]
   });
 
-  container.appendChild(renderEmojiContainer(filteredEmojis, renderer, true, events, category !== EmojiCategory.RECENTS), options);
+  const emojiContainer = renderEmojiContainer(category, filteredEmojis, renderer, true, events, category !== EmojiCategory.RECENTS, options);
+  container.appendChild(emojiContainer.el);
 
-  return container;
+  return { el: container, category, emojiContainer };
 }

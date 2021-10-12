@@ -1,3 +1,5 @@
+import { createNanoEvents } from 'nanoevents';
+
 export const EMOJI = 'emoji';
 export const SHOW_SEARCH_RESULTS = 'showSearchResults';
 export const HIDE_SEARCH_RESULTS = 'hideSearchResults';
@@ -9,68 +11,36 @@ export const PICKER_HIDDEN = 'hidden';
 export const SET_ACTIVE_CATEGORY = 'setActiveCategory';
 export const HIDING_PICKER = 'hidingPicker';
 export const SHOWING_PICKER = 'showingPicker';
+export const ACTIVATE_CATEGORY = 'activateCategory';
+export const NEXT_CATEGORY = 'nextCategory';
+export const PREVIOUS_CATEGORY = 'previousCategory';
 
-// TODO write tests
-export default class Events {
-  constructor() {
-    this.listeners = {};
-  }
+export default function createEmitter() {
+  const unbindFns = [];
+  const events = createNanoEvents();
 
-  bindEvents(bindings, context) {
-    const cleanupFns = Object.keys(bindings).map(event => this.on(event, bindings[event], context));
-
-    return () => {
-      cleanupFns.forEach(cleanupFn => cleanupFn());
-    };
-  }
-
-  getListeners(event) {
-    if (!this.listeners[event]) {
-      this.listeners[event] = [];
-    }
-
-    return this.listeners[event];
-  }
-
-  addListener(event, listener) {
-    this.listeners[event] = [...this.getListeners(event), listener];
-
-    return () => {
-      this.off(event, listener.callback);
-    };
-  }
-
-  on(event, callback, context) {
-    return this.addListener(event, { callback, context });
-  }
-
-  once(event, callback, context) {
-    return this.addListener(event, { callback, context, once: true });
-  }
-
-  off(event, callback) {
-    if (callback) {
-      this.listeners[event] = this.getListeners(event).filter(listener => listener.callback !== callback);
-    } else {
-      this.listeners[event] = [];
-    }
-  }
-
-  emit(event, ...args) {
-    this.getListeners(event).forEach(({ callback, context, once }) => {
-      if (context) {
-        callback.apply(context, args);
-      } else {
+  return {
+    on(event, callback) {
+      const unbind = events.on(event, callback);
+      unbindFns.push(unbind);
+      return unbind;
+    },
+  
+    once(event, callback) {
+      const unbind = events.on(event, (...args) => {
+        unbind();
         callback(...args);
-      }
+      });
+      unbindFns.push(unbind);
+      return unbind;
+    },
+  
+    emit(event, ...args) {
+      events.emit(event, ...args);
+    },
 
-      if (once) {
-        this.off(event, callback);
-      }
-    });
-  }
-
-  destroy() {
-    this.listeners = {};
-  }
+    cleanup() {
+      unbindFns.forEach(unbind => unbind());
+    }
+  };
 }

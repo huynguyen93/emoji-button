@@ -1,3 +1,5 @@
+import { createNanoEvents } from 'nanoevents';
+
 import pkg from '../package.json';
 
 import lightTheme from './styles/theme/light';
@@ -5,10 +7,10 @@ import lightTheme from './styles/theme/light';
 import * as classes from './styles';
 
 import { createFocusTrap } from 'focus-trap';
-import Events from './events';
+// import Events from './events';
 import { createPopper } from '@popperjs/core';
 
-import { EMOJI, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS, HIDE_VARIANT_POPUP, PICKER_HIDDEN, SHOWING_PICKER, HIDING_PICKER } from './events';
+import createEmitter, { EMOJI, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS, HIDE_VARIANT_POPUP, PICKER_HIDDEN, SHOWING_PICKER, HIDING_PICKER } from './events';
 import { EmojiPreview } from './preview';
 import { Search, createSearch } from './search';
 import { createElement, empty, findAllByClass } from './util';
@@ -77,8 +79,8 @@ export class EmojiButton {
   constructor(options = {}) {
     this.pickerVisible = false;
 
-    this.events = new Events();
-    this.publicEvents = new Events();
+    this.events = createEmitter();
+    this.publicEvents = createNanoEvents();
 
     this.options = { ...DEFAULT_OPTIONS, ...options };
     if (!this.options.rootElement) {
@@ -161,10 +163,10 @@ export class EmojiButton {
    *
    * @param searchResults The element containing the search results.
    */
-  showSearchResults(searchResults) {
+  showSearchResults({ el }) {
     empty(this.pickerContent);
-    searchResults.classList.add(classes.searchResults);
-    this.pickerContent.appendChild(searchResults);
+    el.classList.add(classes.searchResults);
+    this.pickerContent.appendChild(el);
   }
 
   /**
@@ -290,14 +292,9 @@ export class EmojiButton {
 
     listenForEmojis(this.events, this.options);
 
-    this.cleanupEvents = this.events.bindEvents(
-      {
-        [SHOW_SEARCH_RESULTS]: this.showSearchResults,
-        [HIDE_SEARCH_RESULTS]: this.hideSearchResults,
-        [EMOJI]: this.emitEmoji
-      },
-      this
-    );
+    this.events.on(SHOW_SEARCH_RESULTS, results => this.showSearchResults(results)),
+    this.events.on(HIDE_SEARCH_RESULTS, () => this.hideSearchResults()),
+    this.events.on(EMOJI, emoji => this.emitEmoji(emoji))
 
     this.buildPreview();
 
@@ -392,14 +389,15 @@ export class EmojiButton {
     }
   }
 
+  cleanupEvents() {
+    this.events.cleanup();
+  }
+
   /**
    * Destroys the picker. Once this is called, the picker can no longer
    * be shown.
    */
   destroyPicker() {
-    this.events.off(EMOJI);
-    this.events.off(HIDE_VARIANT_POPUP);
-
     this.cleanupEvents();
 
     if (this.options.rootElement) {

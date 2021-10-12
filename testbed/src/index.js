@@ -51,15 +51,15 @@ createPicker(
 );
 
 const twemoji = document.querySelector('#twemoji .emoji-button');
-createPicker(
-  twemoji,
-  {
-    theme: darkTheme,
-    placement: 'bottom-start',
-    emojiData,
-    renderer: new TwemojiRenderer()
-  },
-  ({ url }) => {
-    twemoji.innerHTML = `<img src="${url}" />`;
-  }
-);
+// createPicker(
+//   twemoji,
+//   {
+//     theme: darkTheme,
+//     placement: 'bottom-start',
+//     emojiData,
+//     renderer: new TwemojiRenderer()
+//   },
+//   ({ url }) => {
+//     twemoji.innerHTML = `<img src="${url}" />`;
+//   }
+// );

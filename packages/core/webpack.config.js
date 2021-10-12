@@ -14,6 +14,7 @@ module.exports = {
       filename: 'themes/auto.js'
     }
   },
+  devtool: 'eval-source-map',
   mode: 'development',
   output: {
     filename: '[name].js',
