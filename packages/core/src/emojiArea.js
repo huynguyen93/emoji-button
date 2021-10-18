@@ -67,16 +67,14 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
   const observer = new IntersectionObserver(entries => {
     const entry = entries[entries.length - 1];
 
-    // Only interested in intersection changes coming from the top
-    if (entry.boundingClientRect.y < entry.rootBounds.y) {
-      const category = entry.target.parentElement.dataset.category;
+    const category = entry.target.parentElement.dataset.category;
+    const categoryIndex = categories.indexOf(category);
 
-      if (!entry.isIntersecting) { // element has left, select next category
-        const categoryIndex = categories.indexOf(category);
-        selectCategory({ category: categoryIndex + 1, scroll: false });
-      } else { // element has entered, select category
-        selectCategory({ category, scroll: false });
-      }
+    if (entry.isIntersecting) { // target category has entered
+      selectCategory({ category, scroll: false });
+    } else { // target category has exited
+      const offset = Math.sign(entry.rootBounds.y - entry.boundingClientRect.y);
+      selectCategory({ category: categoryIndex + offset, scroll: false })
     }
   }, {
     root: emojiContainer
