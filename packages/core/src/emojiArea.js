@@ -38,7 +38,7 @@ function getHeaderOffsets(headers) {
   );
 }
 
-// TODO custom not showing?
+// TODO custom not selecting right
 
 export function createEmojiArea(events, renderer, i18n, options, filteredEmojis) {
   let currentCategoryIndex = 0;
@@ -60,9 +60,31 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     emojiData[EmojiCategory.CUSTOM] = options.custom.map(custom => ({ ...custom, custom: true }));
   }
 
-  const { el: container, emojiViews } = renderEmojiArea(categories, filteredEmojis, renderer, events, options, i18n);
+  const { el: container, emojiViews, categoryElements } = renderEmojiArea(categories, emojiData, renderer, events, options, i18n);
   const headers = findAllByClass(container, classes.categoryName);
   const emojiContainer = findByClass(container, classes.emojis);
+
+  const observer = new IntersectionObserver(entries => {
+    const entry = entries[entries.length - 1];
+
+    // Only interested in intersection changes coming from the top
+    if (entry.boundingClientRect.y < entry.rootBounds.y) {
+      const category = entry.target.parentElement.dataset.category;
+
+      if (!entry.isIntersecting) { // element has left, select next category
+        const categoryIndex = categories.indexOf(category);
+        selectCategory({ category: categoryIndex + 1, scroll: false });
+      } else { // element has entered, select category
+        selectCategory({ category, scroll: false });
+      }
+    }
+  }, {
+    root: emojiContainer
+  });
+
+  categoryElements.map(el => el.firstElementChild).forEach(headerEl => {
+    observer.observe(headerEl);
+  });
 
   function setFocusedCategory(categoryIndex, offset, reference, applyFocus = true) {
     emojiViews[categories[focusedCategoryIndex]].deactivateFocus();
@@ -96,6 +118,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
   }
 
   function updateRecents() {
+    observer?.unobserve(emojiViews[EmojiCategory.RECENTS].el.parentNode);
     const recents = getRecents(options);
     emojiData[EmojiCategory.RECENTS] = recents;
 
@@ -103,6 +126,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     if (recentsContainer?.parentNode) {
       const newView = renderEmojiContainer(EmojiCategory.RECENTS, recents, renderer, true, events, false, options);
       emojiViews[EmojiCategory.RECENTS] = newView;
+      // observer.observe(newView.el.parentNode);
       recentsContainer.parentNode.replaceChild(
         newView.el,
         recentsContainer
@@ -115,25 +139,25 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
   // Scroll down past several categories
   // Press an arrow, scroll jumps back up
   // Wrong category highlghted
-  function highlightCategory() {
-    const currentCategoryContainer = getCurrentCategoryView().el.parentNode;
-    const nextCategoryContainer = currentCategoryContainer.nextSibling;
+  // function highlightCategory() {
+  //   const currentCategoryContainer = getCurrentCategoryView().el.parentNode;
+  //   const nextCategoryContainer = currentCategoryContainer.nextSibling;
     
-    if (emojiContainer.scrollTop >= nextCategoryContainer.offsetTop) {
-      selectCategory({
-        category: nextCategoryContainer.dataset.category,
-        scroll: false
-      });
-    } else {
-      const previousCategoryContainer = currentCategoryContainer.previousSibling;
-      if (previousCategoryContainer && emojiContainer.scrollTop < currentCategoryContainer.offsetTop) {
-        selectCategory({
-          category: previousCategoryContainer.dataset.category,
-          scroll: false
-        });
-      }
-    }
-  }
+  //   if (emojiContainer.scrollTop >= nextCategoryContainer.offsetTop) {
+  //     selectCategory({
+  //       category: nextCategoryContainer.dataset.category,
+  //       scroll: false
+  //     });
+  //   } else {
+  //     const previousCategoryContainer = currentCategoryContainer.previousSibling;
+  //     if (previousCategoryContainer && emojiContainer.scrollTop < currentCategoryContainer.offsetTop) {
+  //       selectCategory({
+  //         category: previousCategoryContainer.dataset.category,
+  //         scroll: false
+  //       });
+  //     }
+  //   }
+  // }
 
   function getCurrentCategoryView() {
     return emojiViews[categories[currentCategoryIndex]];
@@ -153,7 +177,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     }
   }
 
-  emojiContainer.addEventListener('scroll', highlightCategory);
+  // emojiContainer.addEventListener('scroll', highlightCategory);
 
   events.on(CATEGORY_CLICKED, category => selectCategory({ category, changeFocus: true, focusTarget: 'category' }));
 
@@ -190,7 +214,8 @@ function renderEmojiArea(categories, emojiData, renderer, events, options, i18n)
 
   return {
     el: emojiArea,
-    emojiViews
+    emojiViews,
+    categoryElements
   };
 }
 
