@@ -3,19 +3,15 @@ import { findByClass } from './util';
 import * as classes from './styles';
 
 import { renderCategoryButtons, categoryIcons } from './categoryButtons';
-import { renderEmojiContainer } from './emojiContainer';
+import { renderEmojiContainer, FocusReference } from './emojiContainer';
 
 import { 
   CATEGORY_CLICKED, 
   SET_ACTIVE_CATEGORY, 
-  SHOWING_PICKER, 
-  HIDING_PICKER,
-  ACTIVATE_CATEGORY,
   NEXT_CATEGORY,
   PREVIOUS_CATEGORY
 } from './events';
 
-import { bindKey } from './bindKey';
 import { findAllByClass } from './util';
 import { getRecents } from './recent';
 import { renderTemplate } from './renderTemplate';
@@ -45,11 +41,10 @@ function getHeaderOffsets(headers) {
 // TODO custom not showing?
 
 export function createEmojiArea(events, renderer, i18n, options, filteredEmojis) {
-  let focusedEmoji = null;
-  // let focusedIndex = 0;
   let currentCategoryIndex = 0;
-  let currentCategoryEl = null;
   let headerOffsets = [];
+
+  let focusedCategoryIndex = 0;
 
   const categories = [...options.categories];
   const emojiData = { ...filteredEmojis };
@@ -69,28 +64,21 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
   const headers = findAllByClass(container, classes.categoryName);
   const emojiContainer = findByClass(container, classes.emojis);
 
+  function setFocusedCategory(categoryIndex, offset, reference, applyFocus = true) {
+    emojiViews[categories[focusedCategoryIndex]].deactivateFocus();
+    focusedCategoryIndex = categoryIndex;
+    emojiViews[categories[focusedCategoryIndex]].activateFocus(offset, reference, applyFocus);
+  }
+
   events.on(PREVIOUS_CATEGORY, (offset, reference) => {
-    if (currentCategoryIndex > 0) {
-      const currentView = emojiViews[categories[currentCategoryIndex]];
-      currentView.deactivateFocus();
-
-      selectCategory({ category: currentCategoryIndex - 1, scroll: false });
-
-      const previousView = emojiViews[categories[currentCategoryIndex]];
-      
-      previousView.activateFocus(offset, reference);
+    if (focusedCategoryIndex > 0) {
+      setFocusedCategory(focusedCategoryIndex - 1, offset, reference);
     }
   });
 
   events.on(NEXT_CATEGORY, (offset, reference) => {
-    if (currentCategoryIndex < categories.length - 1) {
-      const currentView = emojiViews[categories[currentCategoryIndex]];
-      currentView.deactivateFocus();
-
-      selectCategory({ category: currentCategoryIndex + 1, scroll: false });
-
-      const nextView = emojiViews[categories[currentCategoryIndex]];
-      nextView.activateFocus(offset, reference);
+    if (focusedCategoryIndex < categories.length - 1) {
+      setFocusedCategory(focusedCategoryIndex + 1, offset, reference);
     }
   });
 
@@ -99,10 +87,10 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
 
     let initialCategory = options.initialCategory || categories[0];
     if (initialCategory === EmojiCategory.RECENTS && emojiData.recents.length === 0) {
-      initialCategory = categories.indexOf(EmojiCategory.RECENTS) + 1;
+      initialCategory = categories[categories.indexOf(EmojiCategory.RECENTS) + 1];
     }
 
-    selectCategory({ category: initialCategory });
+    selectCategory({ category: initialCategory, changeFocus: true });
     
     events.emit(SET_ACTIVE_CATEGORY, currentCategoryIndex, false);
   }
@@ -122,25 +110,13 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     }
   }
 
-  function setFocusedEmoji(index, focus = true) {
-    if (focusedEmoji) {
-      focusedEmoji.tabIndex = -1;
-    }
-
-    // focusedIndex = index;
-    focusedEmoji = currentCategoryEl.children[index];
-
-    if (focusedEmoji) {
-      focusedEmoji.tabIndex = 0;
-
-      if (focus) {
-        focusedEmoji.focus();
-      }
-    }
-  }
-
+  // TODO: need to be able to jump multiple categories:
+  // Focus in one category
+  // Scroll down past several categories
+  // Press an arrow, scroll jumps back up
+  // Wrong category highlghted
   function highlightCategory() {
-    const currentCategoryContainer = currentCategoryEl.parentNode;
+    const currentCategoryContainer = getCurrentCategoryView().el.parentNode;
     const nextCategoryContainer = currentCategoryContainer.nextSibling;
     
     if (emojiContainer.scrollTop >= nextCategoryContainer.offsetTop) {
@@ -159,15 +135,15 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     }
   }
 
-  function selectCategory({ category, focusIndex = 0, focusTarget, scroll = true }) {
-    if (focusedEmoji) {
-      focusedEmoji.tabIndex = -1;
-    }
+  function getCurrentCategoryView() {
+    return emojiViews[categories[currentCategoryIndex]];
+  }
 
+  function selectCategory({ category, changeFocus = false, focusTarget, scroll = true }) {
     currentCategoryIndex = typeof category === 'number' ? category : categories.indexOf(category);
-    currentCategoryEl = findByClass(emojiContainer.children[currentCategoryIndex], classes.emojiContainer);
-
-    setFocusedEmoji(focusIndex, focusTarget === 'emoji');
+    if (changeFocus) {
+      setFocusedCategory(currentCategoryIndex, 0, FocusReference.START, focusTarget === 'emoji');
+    }
 
     events.emit(SET_ACTIVE_CATEGORY, currentCategoryIndex, focusTarget === 'category');
 
@@ -177,34 +153,9 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
     }
   }
 
-  function nextCategory(focusIndex) {
-    traverseCategory(1, focusIndex);
-  }
-
-  function previousCategory(focusIndex) {
-    traverseCategory(-1, focusIndex);
-  }
-
-  function traverseCategory(direction, focusIndex) {
-    selectCategory({
-      category: currentCategoryIndex + direction,
-      focusTarget: 'emoji',
-      focusIndex,
-      scroll: false
-    });
-  }
-
-  function pauseScrollListener(fn) {
-    return function() {
-      emojiContainer.removeEventListener('scroll', highlightCategory);
-      fn();
-      setTimeout(() => emojiContainer.addEventListener('scroll', highlightCategory));
-    }
-  }
-
   emojiContainer.addEventListener('scroll', highlightCategory);
 
-  events.on(CATEGORY_CLICKED, category => selectCategory({ category }));
+  events.on(CATEGORY_CLICKED, category => selectCategory({ category, changeFocus: true, focusTarget: 'category' }));
 
   updateRecents();
 

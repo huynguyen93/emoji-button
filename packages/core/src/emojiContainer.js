@@ -5,7 +5,7 @@ import { renderTemplate } from './renderTemplate';
 
 const template = '<div class="{{classes.emojiContainer}}"></div>';
 
-const FocusReference = {
+export const FocusReference = {
   LAST_ROW: 'LAST_ROW',
   LAST_EMOJI: 'LAST_EMOJI',
   START: 'START'
@@ -19,11 +19,14 @@ export function renderEmojiContainer(key, emojis = [], renderer, showVariants, e
   const emojiElements = emojis.map(emoji => renderEmoji(emoji, renderer, showVariants, true, events, lazy));
   const lastRowStart = emojis.length - (emojis.length % options.emojisPerRow);
 
-  function setFocusedEmoji(index) {
+  function setFocusedEmoji(index, applyFocus = true) {
     emojiElements[focusedIndex].tabIndex = -1;
     focusedIndex = index;
     emojiElements[focusedIndex].tabIndex = 0;
-    emojiElements[focusedIndex].focus();
+
+    if (applyFocus) {
+      emojiElements[focusedIndex].focus();
+    }
   }
   
   if (emojis.length) {
@@ -43,8 +46,8 @@ export function renderEmojiContainer(key, emojis = [], renderer, showVariants, e
     }
   }
 
-  function activateFocus(offset = 0, reference = FocusReference.START) {
-    setFocusedEmoji(getNewFocusIndex(offset, reference));
+  function activateFocus(offset = 0, reference = FocusReference.START, applyFocus = true) {
+    setFocusedEmoji(getNewFocusIndex(offset, reference), applyFocus);
   }
 
   function deactivateFocus() {
