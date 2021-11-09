@@ -68,7 +68,7 @@ export function createSearch(i18n, renderer, events, emojis, options) {
         options
       );
 
-      events.emit(SHOW_SEARCH_RESULTS, resultsContainer);
+      events.emit(SHOW_SEARCH_RESULTS, resultsContainer.el);
     } else {
       events.emit(SHOW_SEARCH_RESULTS, notFoundMessage);
     }

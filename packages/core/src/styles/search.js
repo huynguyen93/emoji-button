@@ -70,13 +70,12 @@ export const searchNotFound = css`
 
 export const searchNotFoundMessage = css`
   color: var(--secondary-text-color);
-  font-size: 1.25em;
-  font-weight: bold;
+  font-size: 1em;
   margin: 0.5em 0;
 `;
 
 export const searchNotFoundIcon = css`
-  font-size: 3em;
+  font-size: 5em;
 
   img {
     width: 1em;

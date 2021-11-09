@@ -163,7 +163,7 @@ export class EmojiButton {
    *
    * @param searchResults The element containing the search results.
    */
-  showSearchResults({ el }) {
+  showSearchResults(el) {
     empty(this.pickerContent);
     el.classList.add(classes.searchResults);
     this.pickerContent.appendChild(el);

@@ -15,5 +15,5 @@ export const i18n = {
     [EmojiCategory.FLAGS]: 'Flags',
     [EmojiCategory.CUSTOM]: 'Custom'
   },
-  notFound: 'No emojis found'
+  notFound: 'No matching emojis found.'
 };
