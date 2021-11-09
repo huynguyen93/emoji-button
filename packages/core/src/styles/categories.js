@@ -1,7 +1,7 @@
 import { css } from '@emotion/css';
 
 export const categoryName = css`
-  margin: 1px 0;
+  margin: 0;
   font-size: 0.85em;
   padding: 0.5em;
   background-image: var(--category-name-background);
@@ -16,6 +16,14 @@ export const categoryName = css`
     opacity: 0.5;
     margin-right: 0.25em;
   }
+`;
+
+export const categoryTop = css`
+  height: 1px;
+`;
+
+export const categoryBottom = css`
+  height: 2px;
 `;
 
 export const categoryButtons = css`

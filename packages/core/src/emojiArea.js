@@ -25,12 +25,15 @@ const template = `
 
 const categoryTemplate = `
   <div data-category="{{categoryKey}}">
+    <div class="{{classes.categoryTop}}"></div>
     <h3 class="{{classes.categoryName}}">
       {{{icon}}}
       {{label}}
     </h3>
   </div>
 `;
+
+const bottomTemplate = '<div class="{{classes.categoryBottom}}"></div>';
 
 function getHeaderOffsets(headers) {
   return Array.prototype.map.call(headers, (header, index) =>
@@ -64,24 +67,40 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
   const headers = findAllByClass(container, classes.categoryName);
   const emojiContainer = findByClass(container, classes.emojis);
 
+  // TODO: Still some bugs here. Scrolling up and down quickly results in weird behavior.
   const observer = new IntersectionObserver(entries => {
-    const entry = entries[entries.length - 1];
-
+    const [entry] = entries;
     const category = entry.target.parentElement.dataset.category;
-    const categoryIndex = categories.indexOf(category);
-
-    if (entry.isIntersecting) { // target category has entered
-      selectCategory({ category, scroll: false });
-    } else { // target category has exited
-      const offset = Math.sign(entry.rootBounds.y - entry.boundingClientRect.y);
-      selectCategory({ category: categoryIndex + offset, scroll: false })
+    if (!entry.isIntersecting) {
+      // console.log(category, 'top not intersecting');
+      console.log(category, 'going to select');
+      selectCategory({ category: entry.target.parentElement.dataset.category, scroll: false });
+    } else {
+      // console.log(category, 'top intersecting');
     }
   }, {
-    root: emojiContainer
+    root: emojiContainer,
+    threshold: 1
   });
 
-  categoryElements.map(el => el.firstElementChild).forEach(headerEl => {
-    observer.observe(headerEl);
+  const bottomObserver = new IntersectionObserver(entries => {
+    const [entry] = entries;
+    const category = entry.target.parentElement.dataset.category;
+    if (entry.isIntersecting) {
+      // console.log(category, 'bottom intersecting');
+      console.log(category, 'going to select');
+      selectCategory({ category: entry.target.parentElement.dataset.category, scroll: false });
+    } else {
+      // console.log(category, 'bottom not intersecting');
+    }
+  }, {
+    root: emojiContainer,
+    threshold: 1
+  });
+
+  categoryElements.forEach(el => {
+    observer.observe(findByClass(el, classes.categoryTop));
+    bottomObserver.observe(findByClass(el, classes.categoryBottom));
   });
 
   function setFocusedCategory(categoryIndex, offset, reference, applyFocus = true) {
@@ -116,13 +135,16 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
   }
 
   function updateRecents() {
-    observer?.unobserve(emojiViews[EmojiCategory.RECENTS].el.parentNode);
+    // observer?.unobserve(findByClass(emojiViews[EmojiCategory.RECENTS].el.parentNode, classes.categoryTop));
+    // bottomObserver?.unobserve(findByClass(emojiViews[EmojiCategory.RECENTS].el.parentNode, classes.categoryBottom));
+    
     const recents = getRecents(options);
     emojiData[EmojiCategory.RECENTS] = recents;
 
     const recentsContainer = findByClass(emojiContainer, classes.emojiContainer);
     if (recentsContainer?.parentNode) {
       const newView = renderEmojiContainer(EmojiCategory.RECENTS, recents, renderer, true, events, false, options);
+      // console.log(newView.el);
       emojiViews[EmojiCategory.RECENTS] = newView;
       // observer.observe(newView.el.parentNode);
       recentsContainer.parentNode.replaceChild(
@@ -226,6 +248,7 @@ function renderCategory(category, filteredEmojis, renderer, events, i18n, option
 
   const emojiContainer = renderEmojiContainer(category, filteredEmojis, renderer, true, events, category !== EmojiCategory.RECENTS, options);
   container.appendChild(emojiContainer.el);
+  container.appendChild(renderTemplate(bottomTemplate));
 
   return { el: container, category, emojiContainer };
 }
