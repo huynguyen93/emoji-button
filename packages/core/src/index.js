@@ -12,7 +12,7 @@ import { createPopper } from '@popperjs/core';
 
 import createEmitter, { EMOJI, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS, HIDE_VARIANT_POPUP, PICKER_HIDDEN, SHOWING_PICKER, HIDING_PICKER } from './events';
 import { EmojiPreview } from './preview';
-import { Search, createSearch } from './search';
+import { createSearch } from './search';
 import { createElement, empty, findAllByClass } from './util';
 import { VariantPopup } from './variantPopup';
 import { listenForEmojis } from './recent';
@@ -23,7 +23,7 @@ import lazyLoad from './lazyLoad';
 
 import { i18n } from './i18n';
 
-import { createEmojiArea, EmojiArea } from './emojiArea';
+import { createEmojiArea } from './emojiArea';
 
 const MOBILE_BREAKPOINT = 450;
 
