@@ -11,7 +11,7 @@ export const FocusReference = {
   START: 'START'
 };
 
-export function renderEmojiContainer(key, emojis = [], renderer, showVariants, events, lazy = true, options) {
+export function renderEmojiContainer(key, emojis = [], renderer, showVariants, events, lazy = true, options, standalone = false) {
   const emojiContainer = renderTemplate(template);
 
   let focusedIndex = 0;
@@ -51,8 +51,10 @@ export function renderEmojiContainer(key, emojis = [], renderer, showVariants, e
   }
 
   function deactivateFocus() {
-    emojiElements[focusedIndex].tabIndex = -1;
-    focusedIndex = 0;
+    if (emojiElements.length) {
+      emojiElements[focusedIndex].tabIndex = -1;
+      focusedIndex = 0;
+    }
   }
 
   bindKey({
@@ -61,7 +63,7 @@ export function renderEmojiContainer(key, emojis = [], renderer, showVariants, e
     callback() {
       if (focusedIndex < (emojis.length - 1)) {
         setFocusedEmoji(focusedIndex + 1);
-      } else {
+      } else if (!standalone) {
         events.emit(NEXT_CATEGORY);
       }
     }
@@ -73,7 +75,7 @@ export function renderEmojiContainer(key, emojis = [], renderer, showVariants, e
     callback() {
       if (focusedIndex > 0) {
         setFocusedEmoji(focusedIndex - 1);
-      } else {
+      } else if (!standalone) {
         events.emit(PREVIOUS_CATEGORY, -1, FocusReference.LAST_EMOJI);
       }
     }
@@ -85,7 +87,7 @@ export function renderEmojiContainer(key, emojis = [], renderer, showVariants, e
     callback() {
       if (focusedIndex < lastRowStart) {
         setFocusedEmoji(Math.min(emojis.length - 1, focusedIndex + options.emojisPerRow));
-      } else {
+      } else if (!standalone) {
         events.emit(NEXT_CATEGORY, focusedIndex % options.emojisPerRow, FocusReference.START);
       }
     }
@@ -97,7 +99,7 @@ export function renderEmojiContainer(key, emojis = [], renderer, showVariants, e
     callback() {
       if (focusedIndex >= options.emojisPerRow) {
         setFocusedEmoji(focusedIndex - options.emojisPerRow);
-      } else {
+      } else if (!standalone) {
         events.emit(PREVIOUS_CATEGORY, focusedIndex, FocusReference.LAST_ROW);
       }
     }

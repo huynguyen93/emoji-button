@@ -11,30 +11,19 @@ const template = `
   </div>
 `;
 
-export class EmojiPreview {
-  constructor(events, renderer, options) {
-    this.events = events;
-    this.renderer = renderer;
-    this.options = options;
-  }
+export function renderPreview(events, renderer, options) {
+  const preview = renderTemplate(template);
+  const [emojiEl, nameEl] = preview.children;
 
-  render() {
-    const preview = renderTemplate(template);
-    [this.emoji, this.name] = preview.children;
-  
-    this.events.on(SHOW_PREVIEW, emoji => this.showPreview(emoji));
-    this.events.on(HIDE_PREVIEW, () => this.hidePreview());
+  events.on(SHOW_PREVIEW, emoji => {
+    emojiEl.replaceChildren(render(emoji, renderer));
+    nameEl.innerHTML = emoji.name;
+  });
 
-    return preview;
-  }
+  events.on(HIDE_PREVIEW, () => {
+    emojiEl.replaceChildren();
+    nameEl.replaceChildren();
+  });
 
-  showPreview(emoji) {
-    this.emoji.replaceChildren(render(emoji, this.renderer));
-    this.name.innerHTML = emoji.name;
-  }
-
-  hidePreview() {
-    this.emoji.replaceChildren();
-    this.name.replaceChildren();
-  }
+  return preview;
 }

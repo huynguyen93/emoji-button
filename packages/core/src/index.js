@@ -11,10 +11,10 @@ import { createFocusTrap } from 'focus-trap';
 import { createPopper } from '@popperjs/core';
 
 import createEmitter, { EMOJI, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS, HIDE_VARIANT_POPUP, PICKER_HIDDEN, SHOWING_PICKER, HIDING_PICKER } from './events';
-import { EmojiPreview } from './preview';
+import { renderPreview } from './preview';
 import { createSearch } from './search';
 import { createElement, empty, findAllByClass } from './util';
-import { VariantPopup } from './variantPopup';
+import { renderVariantPopup, VariantPopup } from './variantPopup';
 import { listenForEmojis } from './recent';
 
 import { emit as emitCustom } from './custom';
@@ -222,7 +222,7 @@ export class EmojiButton {
    */
   buildPreview() {
     if (this.options.uiElements.includes(PickerUIElement.PREVIEW)) {
-      this.pickerEl.appendChild(new EmojiPreview(this.events, this.renderer, this.options).render());
+      this.pickerEl.appendChild(renderPreview(this.events, this.renderer, this.options));
     }
   }
 
@@ -320,7 +320,8 @@ export class EmojiButton {
    * @param emoji The emoji whose variants are to be shown.
    */
   showVariantPopup(emoji) {
-    const variantPopup = new VariantPopup(this.events, this.renderer, emoji, this.options).render();
+    const variantPopup = renderVariantPopup(this.events, this.renderer, emoji, this.options);
+    // const variantPopup = new VariantPopup(this.events, this.renderer, emoji, this.options).render();
 
     if (variantPopup) {
       this.pickerEl.appendChild(variantPopup);

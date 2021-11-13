@@ -2,6 +2,8 @@ import { css } from '@emotion/css';
 
 import { fadeIn, fadeOut, shrink, grow } from './animations';
 
+import { emojiContainer } from './emoji';
+
 export const variantOverlay = css`
   animation: ${fadeIn} var(--animation-duration) var(--animation-easing);
   background: var(--overlay-background-color);
@@ -32,4 +34,9 @@ export const variantPopup = css`
   padding: 0.5em;
   text-align: center;
   user-select: none;
+
+  & > div {
+    display: inline-flex;
+    gap: 2px;
+  }
 `;
