@@ -27,12 +27,12 @@ createPicker(
     theme: lightTheme,
     placement: 'bottom-start',
     emojiData,
-    uiElements: [
-      PickerUIElement.PREVIEW,
-      PickerUIElement.SEARCH,
-      PickerUIElement.RECENTS,
-      PickerUIElement.CATEGORY_BUTTONS
-    ],
+    // uiElements: [
+    //   PickerUIElement.PREVIEW,
+    //   PickerUIElement.SEARCH,
+    //   PickerUIElement.RECENTS,
+    //   PickerUIElement.CATEGORY_BUTTONS
+    // ],
     custom: [
       {
         name: 'O RLY?',
