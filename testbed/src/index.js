@@ -3,9 +3,9 @@ import './index.css';
 import lightTheme from '@emoji-button/core/dist/themes/light';
 import darkTheme from '@emoji-button/core/dist/themes/dark';
 
-import { EmojiButton, EmojiCategory, PickerUIElement } from '@emoji-button/core';
+import { EmojiButton } from '@emoji-button/core';
 import NativeRenderer from '@emoji-button/renderer-native';
-import TwemojiRenderer from '@emoji-button/renderer-twemoji';
+import createTwemojiRenderer from '@emoji-button/renderer-twemoji';
 import emojiData from '@emoji-button/emoji-data/dist/en';
 
 document.querySelector('#version').innerHTML = `v${EmojiButton.version}`;
@@ -27,19 +27,13 @@ createPicker(
     theme: lightTheme,
     placement: 'bottom-start',
     emojiData,
-    // uiElements: [
-    //   PickerUIElement.PREVIEW,
-    //   PickerUIElement.SEARCH,
-    //   PickerUIElement.RECENTS,
-    //   PickerUIElement.CATEGORY_BUTTONS
-    // ],
     custom: [
       {
         name: 'O RLY?',
         emoji: '/orly.jpg'
       }
     ],
-    renderer: new NativeRenderer()
+    renderer: NativeRenderer
   },
   ({ url, emoji }) => {
     if (url) {
@@ -51,15 +45,15 @@ createPicker(
 );
 
 const twemoji = document.querySelector('#twemoji .emoji-button');
-// createPicker(
-//   twemoji,
-//   {
-//     theme: darkTheme,
-//     placement: 'bottom-start',
-//     emojiData,
-//     renderer: new TwemojiRenderer()
-//   },
-//   ({ url }) => {
-//     twemoji.innerHTML = `<img src="${url}" />`;
-//   }
-// );
+createPicker(
+  twemoji,
+  {
+    theme: darkTheme,
+    placement: 'bottom-start',
+    emojiData,
+    renderer: createTwemojiRenderer()
+  },
+  ({ url }) => {
+    twemoji.innerHTML = `<img src="${url}" />`;
+  }
+);
