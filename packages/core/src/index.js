@@ -321,7 +321,6 @@ export class EmojiButton {
    */
   showVariantPopup(emoji) {
     const variantPopup = renderVariantPopup(this.events, this.renderer, emoji, this.options);
-    // const variantPopup = new VariantPopup(this.events, this.renderer, emoji, this.options).render();
 
     if (variantPopup) {
       this.pickerEl.appendChild(variantPopup);
