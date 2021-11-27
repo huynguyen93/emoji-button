@@ -1,3 +1,5 @@
+import escape from 'escape-html';
+
 import { SHOW_PREVIEW, HIDE_PREVIEW } from './events';
 
 import { render } from './render';
@@ -11,13 +13,13 @@ const template = `
   </div>
 `;
 
-export function renderPreview(events, renderer, options) {
+export function renderPreview(events, renderer) {
   const preview = renderTemplate(template);
   const [emojiEl, nameEl] = preview.children;
 
   events.on(SHOW_PREVIEW, emoji => {
     emojiEl.replaceChildren(render(emoji, renderer));
-    nameEl.innerHTML = emoji.name;
+    nameEl.innerHTML = escape(emoji.name);
   });
 
   events.on(HIDE_PREVIEW, () => {

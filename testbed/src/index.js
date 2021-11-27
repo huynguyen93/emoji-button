@@ -31,6 +31,10 @@ createPicker(
       {
         name: 'O RLY?',
         emoji: '/orly.jpg'
+      },
+      {
+        name: '"> <img src="foobar" onerror="alert(1);" /> <',
+        emoji: '"> <img src="foobar" onerror="alert(1);" /> <',
       }
     ],
     renderer: NativeRenderer

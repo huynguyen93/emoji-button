@@ -1,4 +1,5 @@
 import * as classes from './styles';
+import escape from 'escape-html';
 
 import { createElement } from './util';
 import { renderTemplate } from './renderTemplate';
@@ -21,7 +22,7 @@ export function renderCustom(emoji, lazy) {
 export function lazyLoadCustom(element) {
   if (element.dataset.emoji) {
     const img = createElement('img', classes.customEmoji);
-    img.src = element.dataset.emoji;
+    img.src = escape(element.dataset.emoji);
     element.innerText = '';
     element.appendChild(img);
   }
