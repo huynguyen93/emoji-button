@@ -25,7 +25,7 @@
   },
   "scripts": {
     "clean": "rimraf dist release",
-    "start": "npm run build:watch",
+    "start": "parcel harness/index.html",
     "test": "jest src/**.test.js",
     "test:watch": "jest --watchAll src/**.test.js",
     "lint": "eslint src/*.js",

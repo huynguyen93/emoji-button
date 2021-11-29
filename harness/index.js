@@ -1,15 +1,56 @@
 import { EmojiButton } from '../src/index';
+import TwemojiRenderer from '../src/renderers/twemoji';
 import NativeRenderer from '../src/renderers/native';
 import emojiData from '../src/emoji-data/en';
 
 document.querySelector('#version').innerHTML = `v${EmojiButton.version}`;
 
-const picker = new EmojiButton({
-  renderer: new NativeRenderer(),
-  emojiData
-});
+function createPicker(button, options, onEmoji) {
+  const picker = new EmojiButton(options);
+  picker.on('emoji', data => {
+    onEmoji(data);
+  });
+  button.addEventListener('click', () => picker.togglePicker(button));
 
-const button = document.querySelector('#native .emoji-button');
-button.addEventListener('click', () => {
-  picker.togglePicker(button);
-});
+  return picker;
+}
+
+const native = document.querySelector('#native .emoji-button');
+createPicker(
+  native,
+  {
+    placement: 'bottom-start',
+    emojiData,
+    custom: [
+      {
+        name: 'O RLY?',
+        emoji: '/orly.jpg'
+      },
+      {
+        name: '"> <img src="foobar" onerror="alert(1);" /> <',
+        emoji: '"> <img src="foobar" onerror="alert(1);" /> <',
+      }
+    ],
+    renderer: new NativeRenderer()
+  },
+  ({ url, emoji }) => {
+    if (url) {
+      native.innerHTML = `<img src="${url}" />`;
+    } else {
+      native.innerHTML = emoji;
+    }
+  }
+);
+
+const twemoji = document.querySelector('#twemoji .emoji-button');
+createPicker(
+  twemoji,
+  {
+    placement: 'bottom-start',
+    emojiData,
+    renderer: new TwemojiRenderer()
+  },
+  ({ url }) => {
+    twemoji.innerHTML = `<img src="${url}" />`;
+  }
+);

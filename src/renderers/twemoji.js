@@ -5,8 +5,6 @@ const DEFAULT_OPTIONS = {
   folder: 'svg'
 };
 
-// TODO async await
-
 export default class TwemojiRenderer {
   constructor(options) {
     this.options = {
