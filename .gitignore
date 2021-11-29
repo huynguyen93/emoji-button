@@ -3,4 +3,7 @@ node_modules
 dist
 test.js
 test.html
+.parcel-cache
+src/emoji-data
+release
 

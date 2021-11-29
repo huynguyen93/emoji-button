@@ -1,6 +1,6 @@
 import { createNanoEvents } from 'nanoevents';
 
-import pkg from '../package.json';
+import { version } from '../package.json';
 
 import lightTheme from './styles/theme/light';
 
@@ -14,7 +14,7 @@ import createEmitter, { EMOJI, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS, HIDE_VA
 import { renderPreview } from './preview';
 import { createSearch } from './search';
 import { createElement, empty, findAllByClass } from './util';
-import { renderVariantPopup, VariantPopup } from './variantPopup';
+import { renderVariantPopup } from './variantPopup';
 import { listenForEmojis } from './recent';
 
 import { emit as emitCustom } from './custom';
@@ -78,6 +78,8 @@ const DEFAULT_OPTIONS = {
 export class EmojiButton {
   constructor(options = {}) {
     this.pickerVisible = false;
+
+    console.log(options.emojiData);
 
     this.events = createEmitter();
     this.publicEvents = createNanoEvents();
@@ -632,4 +634,4 @@ export class EmojiButton {
   }
 }
 
-EmojiButton.version = pkg.version;
+EmojiButton.version = version;

@@ -9,7 +9,7 @@ const { groups } = require('emojibase-data/meta/groups.json');
 const chalk = require('chalk');
 const xml2js = require('xml2js');
 
-const distPath = path.resolve(__dirname, '..', 'dist');
+const distPath = path.resolve(__dirname, '..', 'src', 'emoji-data');
 
 const annotationsPath = path.resolve(__dirname, '..', 'cldr', 'common', 'annotations');
 const annotationsDerivedPath = path.resolve(__dirname, '..', 'cldr', 'common', 'annotationsDerived');

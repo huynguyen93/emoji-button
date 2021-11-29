@@ -1,25 +1,39 @@
 {
-  "name": "emoji-button",
-  "private": true,
+  "name": "@joeattardi/emoji-button",
   "version": "5.0.0",
-  "workspaces": [
-    "./packages/*",
-    "./testbed"
+  "source": [
+    "src/index.js",
+    "src/renderers/native.js",
+    "src/renderers/twemoji.js",
+    "src/styles/theme/auto.js",
+    "src/styles/theme/dark.js",
+    "src/styles/theme/light.js"
   ],
   "description": "Vanilla JavaScript emoji picker",
   "keywords": [
     "emoji",
+    "emoji picker",
     "javascript"
   ],
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "targets": {
+    "default": {
+      "isLibrary": true,
+      "distDir": "./dist",
+      "outputFormat": "esmodule",
+      "includeNodeModules": false
+    }
+  },
   "scripts": {
+    "clean": "rimraf dist release",
     "start": "npm run build:watch",
     "test": "jest src/**.test.js",
     "test:watch": "jest --watchAll src/**.test.js",
     "lint": "eslint src/*.js",
-    "prettify": "prettier src/*.js --write"
+    "release": "npm run build && node bin/prepare-release.js",
+    "prettify": "prettier src/*.js --write",
+    "build:emoji": "node bin/buildEmojiData.js",
+    "postinstall": "npm run build:emoji",
+    "build": "parcel build"
   },
   "author": "Joe Attardi <jattardi@gmail.com> (https://joeattardi.codes)",
   "repository": {
@@ -33,16 +47,24 @@
     "@babel/core": "^7.14.0",
     "@babel/eslint-parser": "^7.14.2",
     "@babel/preset-env": "^7.14.1",
-    "babel-loader": "^8.2.2",
-    "cross-env": "^7.0.3",
     "eslint": "^7.26.0",
     "eslint-config-prettier": "^6.15.0",
     "jest": "^26.6.3",
+    "parcel": "^2.0.1",
     "prettier": "^2.3.0",
-    "webpack": "^5.37.0",
-    "webpack-cli": "^4.7.0"
+    "recursive-copy": "^2.0.13",
+    "rimraf": "^3.0.2"
   },
-  "files": [
-    "dist"
-  ]
+  "dependencies": {
+    "@emotion/css": "^11.5.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-regular-svg-icons": "^5.15.4",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@popperjs/core": "^2.10.2",
+    "escape-html": "^1.0.3",
+    "focus-trap": "^6.7.1",
+    "mustache": "^4.2.0",
+    "nanoevents": "^6.0.2",
+    "twemoji": "^13.1.0"
+  }
 }

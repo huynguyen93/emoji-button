@@ -1,3 +1,3 @@
 [submodule "packages/emoji-data/cldr"]
-	path = packages/emoji-data/cldr
+	path = cldr
 	url = git@github.com:unicode-org/cldr.git
