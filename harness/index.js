@@ -23,12 +23,8 @@ createPicker(
     emojiData,
     custom: [
       {
-        name: 'O RLY?',
-        emoji: '/orly.jpg'
-      },
-      {
-        name: '"> <img src="foobar" onerror="alert(1);" /> <',
-        emoji: '"> <img src="foobar" onerror="alert(1);" /> <',
+        name: 'kitty',
+        emoji: 'https://placekitten.com/200/200'
       }
     ],
     renderer: new NativeRenderer()
