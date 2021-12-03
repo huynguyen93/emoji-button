@@ -25,7 +25,8 @@
   },
   "scripts": {
     "clean": "rimraf dist release",
-    "start": "parcel harness/index.html",
+    "start": "concurrently -n \"type-check,serve\" -c \"blueBright,yellowBright\" \"npm:check:watch\" \"npm:serve\"",
+    "serve": "parcel harness/index.html",
     "test": "jest src/**.test.js",
     "test:watch": "jest --watchAll src/**.test.js",
     "lint": "eslint src/*.js",
@@ -34,7 +35,8 @@
     "build:emoji": "node bin/buildEmojiData.js",
     "postinstall": "npm run build:emoji",
     "build": "npm run check && parcel build",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "check:watch": "tsc --noEmit --watch"
   },
   "author": "Joe Attardi <jattardi@gmail.com> (https://joeattardi.codes)",
   "repository": {
@@ -51,6 +53,7 @@
     "@types/escape-html": "^1.0.1",
     "@types/mustache": "^4.1.2",
     "@types/twemoji": "^12.1.2",
+    "concurrently": "^6.4.0",
     "eslint": "^7.26.0",
     "eslint-config-prettier": "^6.15.0",
     "jest": "^26.6.3",
