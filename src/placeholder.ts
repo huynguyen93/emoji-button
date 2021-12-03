@@ -6,6 +6,6 @@ import { image } from './icons';
 
 const placeholder = renderTemplate(template, { image });
 
-export default function getPlaceholder() {
-  return placeholder.cloneNode(true);
+export default function getPlaceholder(): HTMLElement {
+  return placeholder.cloneNode(true) as HTMLElement;
 }

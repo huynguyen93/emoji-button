@@ -1,7 +1,18 @@
-let bindings = [];
+type Binding = {
+  target: HTMLElement;
+  listener: (event: KeyboardEvent) => void;
+};
 
-export function bindKey({ key, callback, target = document }) {
-  function listener(event) {
+let bindings: Binding[] = [];
+
+type BindKeyOptions = {
+  key: string;
+  callback: (event: KeyboardEvent) => void;
+  target: HTMLElement;
+}
+
+export function bindKey({ key, callback, target = document.body }: BindKeyOptions): () => void {
+  function listener(event: KeyboardEvent) {
     if (event.key === key) {
       event.preventDefault();
       callback(event);
@@ -19,7 +30,7 @@ export function bindKey({ key, callback, target = document }) {
   }
 }
 
-export function cleanAll() {
+export function cleanAll(): void {
   bindings.forEach(binding => {
     binding.target.removeEventListener('keydown', binding.listener);
   })

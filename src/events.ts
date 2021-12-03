@@ -1,4 +1,4 @@
-import { createNanoEvents } from 'nanoevents';
+import { createNanoEvents, Unsubscribe } from 'nanoevents';
 
 export const EMOJI = 'emoji';
 export const SHOW_SEARCH_RESULTS = 'showSearchResults';
@@ -15,18 +15,20 @@ export const ACTIVATE_CATEGORY = 'activateCategory';
 export const NEXT_CATEGORY = 'nextCategory';
 export const PREVIOUS_CATEGORY = 'previousCategory';
 
+type EventCallback = (...args: any[]) => void;
+
 export default function createEmitter() {
-  const unbindFns = [];
+  const unbindFns: Unsubscribe[] = [];
   const events = createNanoEvents();
 
   return {
-    on(event, callback) {
+    on(event: string, callback: EventCallback) {
       const unbind = events.on(event, callback);
       unbindFns.push(unbind);
       return unbind;
     },
   
-    once(event, callback) {
+    once(event: string, callback: EventCallback) {
       const unbind = events.on(event, (...args) => {
         unbind();
         callback(...args);
@@ -35,7 +37,7 @@ export default function createEmitter() {
       return unbind;
     },
   
-    emit(event, ...args) {
+    emit(event: string, ...args: any[]) {
       events.emit(event, ...args);
     },
 

@@ -143,7 +143,7 @@ export function createEmojiArea(events, renderer, i18n, options, filteredEmojis)
 
     const recentsContainer = findByClass(emojiContainer, classes.emojiContainer);
     if (recentsContainer?.parentNode) {
-      const newView = renderEmojiContainer(EmojiCategory.RECENTS, recents, renderer, true, events, false, options);
+      const newView = renderEmojiContainer(recents, renderer, true, events, false, options);
       // console.log(newView.el);
       emojiViews[EmojiCategory.RECENTS] = newView;
       // observer.observe(newView.el.parentNode);
@@ -246,7 +246,7 @@ function renderCategory(category, filteredEmojis, renderer, events, i18n, option
     icon: categoryIcons[category]
   });
 
-  const emojiContainer = renderEmojiContainer(category, filteredEmojis, renderer, true, events, category !== EmojiCategory.RECENTS, options);
+  const emojiContainer = renderEmojiContainer(filteredEmojis, renderer, true, events, category !== EmojiCategory.RECENTS, options);
   container.appendChild(emojiContainer.el);
   container.appendChild(renderTemplate(bottomTemplate));
 

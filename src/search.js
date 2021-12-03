@@ -59,7 +59,6 @@ export function createSearch(i18n, renderer, events, emojis, options) {
     const searchResults = searchData.filter(emoji => emoji.name.includes(searchInput.value));
     if (searchResults.length) {
       const resultsContainer = renderEmojiContainer(
-        'searchResults',
         searchResults,
         renderer,
         true,

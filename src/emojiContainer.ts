@@ -1,17 +1,22 @@
+import { Emitter } from 'nanoevents';
+
 import { renderEmoji } from './emoji';
 import { ACTIVATE_CATEGORY, NEXT_CATEGORY, PREVIOUS_CATEGORY } from './events';
 import { bindKey } from './bindKey';
 import { renderTemplate } from './renderTemplate';
+import Renderer from './renderers/renderer';
+import { EmojiData, VariationData } from './types';
 
 const template = '<div class="{{classes.emojiContainer}}"></div>';
 
-export const FocusReference = {
-  LAST_ROW: 'LAST_ROW',
-  LAST_EMOJI: 'LAST_EMOJI',
-  START: 'START'
+
+export enum FocusReference {
+  LAST_ROW,
+  LAST_EMOJI,
+  START
 };
 
-export function renderEmojiContainer(key, emojis = [], renderer, showVariants, events, lazy = true, options, standalone = false) {
+export function renderEmojiContainer(emojis: EmojiData[] = [], renderer: Renderer, showVariants: boolean, events: Emitter, lazy = true, options: any, standalone = false) {
   const emojiContainer = renderTemplate(template);
 
   let focusedIndex = 0;
@@ -19,7 +24,7 @@ export function renderEmojiContainer(key, emojis = [], renderer, showVariants, e
   const emojiElements = emojis.map(emoji => renderEmoji(emoji, renderer, showVariants, true, events, lazy));
   const lastRowStart = emojis.length - (emojis.length % options.emojisPerRow);
 
-  function setFocusedEmoji(index, applyFocus = true) {
+  function setFocusedEmoji(index: number, applyFocus = true) {
     emojiElements[focusedIndex].tabIndex = -1;
     focusedIndex = index;
     emojiElements[focusedIndex].tabIndex = 0;
@@ -35,7 +40,7 @@ export function renderEmojiContainer(key, emojis = [], renderer, showVariants, e
     emojiContainer.appendChild(fragment);
   }
 
-  function getNewFocusIndex(offset, reference) {
+  function getNewFocusIndex(offset: number, reference: FocusReference) {
     switch (reference) {
       case FocusReference.START:
         return offset;

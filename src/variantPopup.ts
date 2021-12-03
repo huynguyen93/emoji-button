@@ -1,5 +1,8 @@
-import { bindKey } from './bindKey';
+import { Emitter } from 'nanoevents';
 
+import { bindKey } from './bindKey';
+import { Emoji, VariationData, hasVariations } from './types';
+import Renderer from './renderers/renderer';
 import { HIDE_VARIANT_POPUP } from './events';
 import { renderEmojiContainer } from './emojiContainer';
 import { renderTemplate } from './renderTemplate';
@@ -10,23 +13,23 @@ const template = `
   </div>
 `;
 
-export function renderVariantPopup(events, renderer, emoji, options) {
+export function renderVariantPopup(events: Emitter, renderer: Renderer, emoji: Emoji, options: any): HTMLElement {
   const container = renderTemplate(template);
-  const popup = container.firstElementChild;
+  const popup = container.firstElementChild as HTMLElement;
 
-  container.addEventListener('click', event => {
+  container.addEventListener('click', (event: MouseEvent) => {
     event.stopPropagation();
 
-    if (!popup.contains(event.target)) {
+    if (!popup.contains(event.target as Node)) {
       events.emit(HIDE_VARIANT_POPUP);
     }
   });
 
   const variations = emoji.variations || [];
-  
-  popup.style.setProperty('--emoji-per-row', variations.length + 1);
 
-  const variationChildren = [
+  popup.style.setProperty('--emoji-per-row', (variations.length + 1).toString());
+
+  const variationChildren: Array<Emoji | VariationData> = [
     emoji,
     ...variations.map((variation, index) => ({
       name: emoji.name,
@@ -36,7 +39,6 @@ export function renderVariantPopup(events, renderer, emoji, options) {
   ];
 
   const emojis = renderEmojiContainer(
-    'variations',
     variationChildren,
     renderer,
     true,

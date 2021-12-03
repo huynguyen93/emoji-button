@@ -1,9 +1,11 @@
+import { Emitter } from 'nanoevents';
 import escape from 'escape-html';
 
 import { SHOW_PREVIEW, HIDE_PREVIEW } from './events';
 
-import { render } from './render';
+import Renderer from './renderers/renderer';
 
+import { render } from './render';
 import { renderTemplate } from './renderTemplate';
 
 const template = `
@@ -13,7 +15,7 @@ const template = `
   </div>
 `;
 
-export function renderPreview(events, renderer) {
+export function renderPreview(events: Emitter, renderer: Renderer): Element {
   const preview = renderTemplate(template);
   const [emojiEl, nameEl] = preview.children;
 

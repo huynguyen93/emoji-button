@@ -1,7 +1,11 @@
+import { Emitter } from 'nanoevents';
+
 import { EMOJI, HIDE_PREVIEW, SHOW_PREVIEW } from './events';
 import { render } from './render';
 import { renderTemplate } from './renderTemplate';
 import getPlaceholder from './placeholder';
+import { EmojiData, isCustom } from './types';
+import Renderer from './renderers/renderer';
 
 const template = `
   <button 
@@ -12,11 +16,16 @@ const template = `
   </button>
 `;
 
-export function renderEmoji(emoji, renderer, showVariants, showPreview, events, lazy = true) {
+export function renderEmoji(emoji: EmojiData, renderer: Renderer, showVariants: boolean, showPreview: boolean, events: Emitter, lazy = true) {
   const button = renderTemplate(template, { emoji });
-  button.appendChild(render(emoji, renderer, lazy && getPlaceholder()));
 
-  if (emoji.custom) {
+  if (lazy) {
+    button.appendChild(render(emoji, renderer, getPlaceholder()));  
+  } else {
+    button.appendChild(render(emoji, renderer));
+  }
+
+  if (isCustom(emoji)) {
     button.dataset.custom = 'true';
   }
 

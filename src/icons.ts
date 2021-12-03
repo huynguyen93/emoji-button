@@ -1,4 +1,4 @@
-import { library, icon } from '@fortawesome/fontawesome-svg-core';
+import { library, icon, IconPrefix, IconName } from '@fortawesome/fontawesome-svg-core';
 import {
   faCat,
   faCoffee,
@@ -57,11 +57,11 @@ export const times = buildIcon('fas', 'times');
 export const user = buildIcon('fas', 'user');
 export const notFound = buildIcon('far', 'times-circle');
 
-function buildIcon(prefix, iconName) {
+function buildIcon(prefix: IconPrefix, iconName: IconName) {
   return icon({ prefix, iconName }).html[0];
 }
 
-export function createIcon(src) {
+export function createIcon(src: string) {
   const img = document.createElement('img');
   img.src = src;
   return img;
