@@ -1,7 +1,7 @@
 import { Emitter } from 'nanoevents';
 
 import { bindKey } from './bindKey';
-import { Emoji, VariationData, hasVariations } from './types';
+import { Emoji, VariationData } from './types';
 import Renderer from './renderers/renderer';
 import { HIDE_VARIANT_POPUP } from './events';
 import { renderEmojiContainer } from './emojiContainer';

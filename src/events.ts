@@ -1,5 +1,7 @@
 import { createNanoEvents, Unsubscribe } from 'nanoevents';
 
+export { Emitter } from 'nanoevents';
+
 export const EMOJI = 'emoji';
 export const SHOW_SEARCH_RESULTS = 'showSearchResults';
 export const HIDE_SEARCH_RESULTS = 'hideSearchResults';

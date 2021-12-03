@@ -4,9 +4,12 @@ import * as classes from './styles';
 
 import { bindKey } from './bindKey';
 import { FocusReference, renderEmojiContainer } from './emojiContainer';
-import { HIDE_PREVIEW, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS } from './events';
+import { Emitter, HIDE_PREVIEW, SHOW_SEARCH_RESULTS, HIDE_SEARCH_RESULTS } from './events';
 import { findByClass } from './util';
 import { renderTemplate } from './renderTemplate';
+import { i18n as i18nDefinition } from './i18n';
+import { EmojiDefinitions } from './types';
+import Renderer from './renderers/renderer';
 
 const searchTemplate = `
   <div class="{{classes.searchContainer}}">
@@ -28,7 +31,12 @@ const clearButtonTemplate = `
   </button>
 `;
 
-export function createSearch(i18n, renderer, events, emojis, options) {
+export function createSearch(
+  i18n: typeof i18nDefinition, 
+  renderer: Renderer, 
+  events: Emitter, 
+  emojis: EmojiDefinitions, 
+  options: any) {
   const searchData = Object.keys(emojis)
     .flatMap(category => emojis[category]);
 
@@ -52,11 +60,11 @@ export function createSearch(i18n, renderer, events, emojis, options) {
   });
 
   const iconContainer = findByClass(container, classes.searchIcon);
-  iconContainer.appendChild(searchIcon);
+  iconContainer?.appendChild(searchIcon);
 
   function updateSearchResults() {
     events.emit(HIDE_PREVIEW);
-    const searchResults = searchData.filter(emoji => emoji.name.includes(searchInput.value));
+    const searchResults = searchData.filter(emoji => emoji.name.includes(searchInput!.value));
     if (searchResults.length) {
       const resultsContainer = renderEmojiContainer(
         searchResults,
@@ -75,43 +83,47 @@ export function createSearch(i18n, renderer, events, emojis, options) {
   }
 
   const searchInput = container.querySelector('input');
-  searchInput.addEventListener('input', () => {
-    if (searchInput.value) {
-      iconContainer.replaceChild(clearButton, iconContainer.firstChild);
-    } else {
-      events.emit(HIDE_SEARCH_RESULTS);
-      iconContainer.replaceChild(searchIcon, iconContainer.firstChild);
-    }
-
-    if (!searchInput.value) {
-      events.emit(HIDE_SEARCH_RESULTS);
-    } else {
-      updateSearchResults();
-    }
-  });
-
-
-  bindKey({
-    key: 'Escape',
-    target: searchInput,
-    callback: event => {
+  if (searchInput && iconContainer) {
+    searchInput.addEventListener('input', () => {
+      const child = iconContainer.firstChild as Node;
       if (searchInput.value) {
-        event.stopPropagation();
-        clearSearch();
-        setTimeout(() => searchInput.focus());
+        iconContainer.replaceChild(clearButton, child);
+      } else {
+        events.emit(HIDE_SEARCH_RESULTS);
+        iconContainer.replaceChild(searchIcon, child);
       }
-    }
-  });
+
+      if (!searchInput.value) {
+        events.emit(HIDE_SEARCH_RESULTS);
+      } else {
+        updateSearchResults();
+      }
+    });
+  }
+
+  if (searchInput) {
+    bindKey({
+      key: 'Escape',
+      target: searchInput,
+      callback: event => {
+        if (searchInput.value) {
+          event.stopPropagation();
+          clearSearch();
+          setTimeout(() => searchInput.focus());
+        }
+      }
+    });
+  }
 
   function clearSearch() {
-    iconContainer.replaceChild(searchIcon, iconContainer.firstChild);
-    searchInput.value = '';
+    iconContainer?.replaceChild(searchIcon, iconContainer.firstChild as Node);
+    searchInput!.value = '';
     updateSearchResults();
     events.emit(HIDE_SEARCH_RESULTS);
   }
 
   function focusSearch() {
-    searchInput.focus();
+    searchInput!.focus();
   }
 
   return {

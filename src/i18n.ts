@@ -1,4 +1,4 @@
-import { EmojiCategory } from './constants';
+import { EmojiCategory } from './types';
 
 export const i18n = {
   search: 'Search emojis...',
