@@ -1,7 +1,7 @@
-import { CATEGORY_CLICKED, SET_ACTIVE_CATEGORY } from './events';
+import { Emitter, CATEGORY_CLICKED, SET_ACTIVE_CATEGORY } from './events';
 
-import { EmojiCategory, PickerUIElement } from './constants';
-
+import { EmojiCategory, PickerUIElement } from './types';
+import { I18NDefinitions } from './i18n';
 import * as icons from './icons';
 import { renderTemplate } from './renderTemplate';
 
@@ -29,7 +29,7 @@ const template = `
   </div>
 `;
 
-function clearActive(buttons) {
+function clearActive(buttons: HTMLButtonElement[]) {
   const activeButtonEl = buttons.find(button => button.classList.contains('active'));
   if (activeButtonEl) {
     activeButtonEl.classList.remove('active');
@@ -37,7 +37,7 @@ function clearActive(buttons) {
   }
 }
 
-function setActive(newActiveButton, category, focus) {
+function setActive(newActiveButton: HTMLButtonElement, focus: boolean) {
   newActiveButton.classList.add('active');
   newActiveButton.tabIndex = 0;
 
@@ -46,7 +46,7 @@ function setActive(newActiveButton, category, focus) {
   }
 }
 
-export function renderCategoryButtons(options, events, i18n) {
+export function renderCategoryButtons(options: any, events: Emitter, i18n: I18NDefinitions) {
   const categoryData = options.categories;
   let categories = options.uiElements.includes(PickerUIElement.RECENTS)
     ? [EmojiCategory.RECENTS, ...categoryData]
@@ -58,19 +58,19 @@ export function renderCategoryButtons(options, events, i18n) {
 
   const container = renderTemplate(template, {
     categories,
-    name() {
+    name(this: EmojiCategory) {
       return i18n.categories[this];
     },
-    icon() {
+    icon(this: EmojiCategory) {
       return categoryIcons[this] || icons.smile;
     }
   });
 
   const buttons = [...container.querySelectorAll('button')];
 
-  container.addEventListener('click', event => {
-    const target = event.target.closest('button');
-    events.emit(CATEGORY_CLICKED, target.dataset.category);
+  container.addEventListener('click', (event: MouseEvent) => {
+    const target = (event.target as HTMLElement).closest('button');
+    events.emit(CATEGORY_CLICKED, target?.dataset.category);
   });
 
   container.addEventListener('keydown', event => {
@@ -94,7 +94,7 @@ export function renderCategoryButtons(options, events, i18n) {
 
   events.on(SET_ACTIVE_CATEGORY, (category, focus = true) => {
     clearActive(buttons);
-    setActive(buttons[category], category, focus);
+    setActive(buttons[category], focus);
   });
 
   return container;

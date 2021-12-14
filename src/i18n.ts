@@ -17,3 +17,5 @@ export const i18n = {
   },
   notFound: 'No matching emojis found.'
 };
+
+export type I18NDefinitions = typeof i18n;
